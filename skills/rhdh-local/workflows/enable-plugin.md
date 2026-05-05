@@ -12,7 +12,7 @@ Read before starting:
 
 > **Note:** This sequence involves multiple API calls to GitHub. If any step fails, check GitHub API rate limits and authentication.
 
-## Steps 1–3: Identify Plugin & Fetch Metadata
+## Step 1: Identify Plugin & Fetch Metadata
 
 Ask the user which plugin to enable. Use the `fetch-plugin-metadata.py` script to list plugins and retrieve all metadata in one step:
 
@@ -81,7 +81,7 @@ Extract: `spec.dynamicArtifact`, `spec.backstage.role`, `spec.appConfigExamples`
 
 ---
 
-## Step 4: Add to `dynamic-plugins.override.yaml`
+## Step 2: Add to `dynamic-plugins.override.yaml`
 
 Edit `rhdh-customizations/configs/dynamic-plugins/dynamic-plugins.override.yaml`.
 
@@ -130,7 +130,7 @@ Backend plugins should be listed before their corresponding frontend plugins.
 
 ---
 
-## Step 5: Add Backend Configuration (if needed)
+## Step 3: Add Backend Configuration (if needed)
 
 If `spec.appConfigExamples` includes configuration outside the `dynamicPlugins` key, add it to:
 `rhdh-customizations/configs/app-config/app-config.local.yaml`
@@ -150,7 +150,7 @@ argocd:
 
 ---
 
-## Step 6: Set Required Environment Variables
+## Step 4: Set Required Environment Variables
 
 If backend config references `${VAR_NAME}` variables, tell the user to add them to `rhdh-customizations/.env` (bare format — no `export`, no quotes):
 
@@ -163,18 +163,18 @@ This file overrides `rhdh-local/default.env`.
 
 ---
 
-## Step 7: Present Summary
+## Step 5: Present Summary
 
 Before applying, show the user:
 
 - Which packages were added to `dynamic-plugins.override.yaml`
 - What app-config was added (if any)
 - What environment variables need to be set in `.env`
-- The commands from Step 8
+- The commands from Step 6
 
 ---
 
-## Step 8: Apply and Restart
+## Step 6: Apply and Restart
 
 ```bash
 rhdh local apply

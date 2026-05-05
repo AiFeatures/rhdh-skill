@@ -37,11 +37,10 @@ Before starting, ensure the following are available:
 ## Workflow Overview
 
 1. **Determine RHDH Version** - Identify target RHDH version for compatibility
-2. **Create Backstage App** - Scaffold Backstage app with matching version
-3. **Create Backend Plugin** - Generate new backend plugin using Backstage CLI
-4. **Implement Plugin Logic** - Write the plugin code using new backend system
-5. **Export and Package** - Build, export, and package using RHDH CLI (see export-and-package skill)
-6. **Configure for RHDH** - Create dynamic-plugins.yaml configuration
+2. **Scaffold App and Plugin** - Create Backstage app and generate backend plugin
+3. **Implement Plugin Logic** - Write the plugin code using new backend system
+4. **Export and Package** - Build, export, and package using RHDH CLI (see export-and-package skill)
+5. **Configure for RHDH** - Create dynamic-plugins.yaml configuration
 
 ## Step 1: Determine RHDH Version
 
@@ -49,7 +48,7 @@ Check the target RHDH version and find the compatible Backstage version. Consult
 
 Ask the user which RHDH version they are targeting if not specified.
 
-## Steps 2-3: Create Backstage Application & Backend Plugin
+## Step 2: Scaffold App and Plugin
 
 Use the scaffold script to automate app creation, dependency installation, and plugin generation in one command:
 
@@ -97,7 +96,7 @@ plugins/<plugin-id>-backend/
 └── README.md
 ```
 
-## Step 4: Implement Plugin Logic
+## Step 3: Implement Plugin Logic
 
 Backend plugins must use the **new backend system** for dynamic plugin compatibility. The plugin entry point should export a default using `createBackendPlugin()` or `createBackendModule()`.
 
@@ -151,7 +150,7 @@ cd plugins/<plugin-id>-backend
 yarn build
 ```
 
-## Step 5: Export and Package
+## Step 4: Export and Package
 
 Export the plugin as a dynamic plugin and package it for deployment. For detailed export and packaging options, see the **export-and-package** skill.
 
@@ -175,7 +174,7 @@ podman push quay.io/<namespace>/<plugin-name>:v0.1.0
 
 For advanced options (dependency handling, multi-plugin bundles, tgz/npm packaging), consult the **export-and-package** skill.
 
-## Step 6: Configure for RHDH
+## Step 5: Configure for RHDH
 
 Create the dynamic plugin configuration for RHDH. Add to `dynamic-plugins.yaml`:
 

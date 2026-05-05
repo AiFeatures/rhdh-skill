@@ -56,7 +56,7 @@ Ask the user which RHDH version they are targeting if not specified.
 
 ## Step 2: Create Backstage Application
 
-> **Automated:** Steps 2 + 4 (and optionally 3) are automated by the scaffold script.
+> **Automated:** This step plus Step 4 (and optionally Step 3) are automated by the scaffold script.
 > Run it from the directory where the app should be created:
 >
 > ```bash
@@ -110,7 +110,7 @@ const app = createApp({
 
 ## Step 4: Create Frontend Dynamic Plugin
 
-> **Automated:** If you used `scripts/scaffold.py` in Step 2, this step was already completed. Skip to Step 5.
+> **Automated:** If you used the scaffold script in Step 2, this step was already completed. Skip to Step 5.
 
 ### Manual method
 
