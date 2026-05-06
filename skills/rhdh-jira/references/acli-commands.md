@@ -245,6 +245,7 @@ When writing descriptions, use `--description "plain text"`. When reading, be aw
 **Critical:** Both `search --json` and `view KEY --json` (without `--fields "*all"`) return only basic fields: assignee, issuetype, priority, status, summary. Custom fields (story_points, team, sprint, size) are NOT included.
 
 To get custom fields, you MUST either:
+
 1. Use `view KEY --fields "*all" --json` (what `--enrich` does internally per issue), or
 2. Use `parse_issues.py --enrich` (recommended — handles batching and flattening)
 

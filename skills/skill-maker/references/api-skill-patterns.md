@@ -9,6 +9,7 @@ For general reference architecture patterns (transitive loading, error placement
 Skills that authenticate against external services must handle credentials carefully.
 
 **Rules:**
+
 1. **Never read credential files into context.** The agent must not use `read` or `cat` to view token/password files. Credentials passed through the LLM context are logged, cached, and potentially leaked.
 2. **Pass credentials via shell substitution.** Use `curl -u "$(cat path/.token)"` — the secret stays in the shell, never enters the conversation.
 3. **Document the credential file format explicitly.** Show the exact format (e.g., `email:token`), not just "put your token here." Ambiguity causes auth errors.
@@ -17,6 +18,7 @@ Skills that authenticate against external services must handle credentials caref
 6. **Single-source the credential setup.** Document token format, path discovery, and security in its own reference file. Other references point to it — don't embed it in a consumer (see `spec-guide.md` → transitive loading).
 
 Example capability gate in SKILL.md:
+
 ```markdown
 Before attempting REST API calls:
 1. Run `python scripts/setup.py --json` and check `token_file_found`
@@ -31,6 +33,7 @@ When a skill wraps an API, the agent should be able to discover available endpoi
 ### REST APIs (OpenAPI)
 
 If the API publishes an OpenAPI spec:
+
 1. Document the download URL (without version pins that go stale)
 2. Show how to query it programmatically (Python `json.load` + dict traversal)
 3. Do not load the spec into context — it's typically 1-10MB
@@ -39,6 +42,7 @@ If the API publishes an OpenAPI spec:
 ### GraphQL APIs
 
 GraphQL APIs are self-describing via introspection. There is no spec file to download.
+
 1. Document `__type(name: "TypeName")` queries for targeted discovery
 2. Document full `__schema` dump for offline analysis (save to file, query programmatically)
 3. Note that introspection output is large — do not load into context
@@ -62,6 +66,7 @@ Do not write API examples from memory or documentation alone. Run them against t
 **Why:** API schemas drift from documentation. Field names, payload formats, and required headers discovered through docs may not match the live API. A skill with broken examples is worse than no skill — the agent will retry the broken pattern repeatedly.
 
 **Process:**
+
 1. Draft the example from docs or training knowledge
 2. Run it against the real endpoint
 3. If it fails, use schema discovery (OpenAPI spec, GraphQL introspection) to find the correct field names and formats

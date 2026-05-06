@@ -1,6 +1,6 @@
 # Description Optimization Guide
 
-Full guide: https://agentskills.io/skill-creation/optimizing-descriptions
+Full guide: <https://agentskills.io/skill-creation/optimizing-descriptions>
 
 ## How Triggering Works
 
@@ -21,11 +21,13 @@ Key insight: agents only consult skills for tasks they can't easily handle on th
 Agents tend to undertrigger. Make descriptions slightly aggressive about when to activate:
 
 **Too passive:**
+
 ```
 Helps with dashboard creation.
 ```
 
 **Better:**
+
 ```
 Build fast dashboards to display internal data. Use when the user mentions
 dashboards, data visualization, internal metrics, or wants to display any
@@ -45,6 +47,7 @@ kind of data, even if they don't explicitly ask for a "dashboard."
 Write two sets:
 
 **Should-trigger (8-10 queries):**
+
 - Different phrasings of the same intent
 - Formal and casual variants
 - Cases where user doesn't name the skill explicitly but clearly needs it
@@ -52,6 +55,7 @@ Write two sets:
 - Cases where this skill competes with another but should win
 
 **Should-not-trigger (8-10 queries):**
+
 - Near-misses that share keywords but need different capabilities
 - Adjacent tasks that belong to other skills
 - Queries that use the same terms in different contexts

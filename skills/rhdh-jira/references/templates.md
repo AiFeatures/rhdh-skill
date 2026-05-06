@@ -15,27 +15,27 @@ _Provide a quick overview of the goal and key background or context._
 h3. *Benefits/Value:*
 
 _What are the benefits or value for our customers if we do this?_
- *  
+ *
 
 h3. *Acceptance Criteria:*
 
 _What must be true for this to be considered complete?_
- *  
+ *
 
 h3. *Out of Scope:*
 
 _If there are significant scope constraints, note them so goals and non-goals are clear._
- *  
+ *
 
 h3. *Metrics:*
 
 _What metrics and telemetry data influence this and either help inform this work, or could help us understand its impact?_
- *  
+ *
 
 h3. *Dependencies:*
 
 _Note any major team or technology dependencies outside of our direct control that we may need to plan around._
- *  
+ *
 ```
 
 ## Feature Template

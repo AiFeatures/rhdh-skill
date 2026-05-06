@@ -2,7 +2,7 @@
 """Export, package, and push a Backstage plugin as an RHDH dynamic plugin.
 
 Automates the full export+package+push pipeline described in the
-export-and-package skill (SKILL.md Steps 1-4):
+create-plugin skill's export command (references/export.md):
 
   1. Validate plugin directory and package.json
   2. Build (yarn build + yarn tsc)
@@ -29,7 +29,10 @@ from typing import Any, Optional
 # ANSI helpers
 # ---------------------------------------------------------------------------
 
-_NO_COLOR = os.environ.get("NO_COLOR") is not None or not sys.stdout.isatty()
+# Disable colors if NO_COLOR is set or neither stdout nor stderr is a TTY
+_NO_COLOR = os.environ.get("NO_COLOR") is not None or not (
+    sys.stdout.isatty() or sys.stderr.isatty()
+)
 
 RED = "" if _NO_COLOR else "\033[0;31m"
 GREEN = "" if _NO_COLOR else "\033[0;32m"
@@ -85,6 +88,8 @@ def _run(
         check=True,
         capture_output=capture,
         text=True,
+        # On Windows, shell=True is needed for npx/yarn/npm .cmd shims
+        shell=(sys.platform == "win32"),
     )
 
 
@@ -257,8 +262,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Export, package, and optionally push a Backstage plugin "
-            "as an RHDH dynamic plugin. Automates Steps 1-4 of the "
-            "export-and-package workflow."
+            "as an RHDH dynamic plugin. Automates the export pipeline "
+            "from the create-plugin skill."
         ),
         epilog=(
             "Examples:\n"

@@ -13,6 +13,7 @@ Do NOT use when the operations have no shared context. Separate skills are bette
 ### Structure
 
 The SKILL.md contains:
+
 1. **Setup section** — shared gates that run before any command
 2. **Shared rules** — domain laws that apply to every command
 3. **Router table** — maps command names to reference files
@@ -210,6 +211,7 @@ if __name__ == "__main__":
 ```
 
 Key behaviors:
+
 - **Case-insensitive filename matching**: Accept `PROJECT.md`, `Project.md`, `project.md`
 - **Env override**: `SKILL_CONTEXT_DIR=path/to/dir` for non-standard layouts
 - **Fallback directories**: Check `.agents/context/` and `docs/` if root is clean
@@ -248,6 +250,7 @@ that the step is skipped and why. Do not ask the user to install tooling. Procee
 ```
 
 Rules:
+
 - State the conditions explicitly (ALL must be true)
 - Make the step mandatory when conditions are met — don't let the agent skip out of laziness
 - Provide a one-line skip reason template

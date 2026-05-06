@@ -33,6 +33,7 @@ The `AUTH` value is `email:api-token`, passed directly as basic auth credentials
 ## Security
 
 The `.jira-token` file contains plaintext credentials. Restrict permissions:
+
 - Unix/macOS: `chmod 600 .jira-token`
 - Windows: restrict access via file properties → Security tab
 

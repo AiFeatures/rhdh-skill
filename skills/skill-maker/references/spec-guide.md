@@ -1,6 +1,6 @@
 # Agent Skills Specification Guide
 
-Full spec: https://agentskills.io/specification
+Full spec: <https://agentskills.io/specification>
 
 ## Directory Structure
 
@@ -46,6 +46,7 @@ Three loading levels:
 3. **Resources** (as needed): Files in `scripts/`, `references/`, `assets/` loaded only when required
 
 This means:
+
 - Keep SKILL.md body concise — it competes for attention with everything else in context
 - Move domain-specific deep-dives into `references/` files
 - Tell the agent exactly when to load each reference: "Read `references/aws.md` if deploying to AWS"
@@ -98,6 +99,7 @@ An agent should be able to load any single reference file and use it without bei
 **Correct pattern:** Extract shared setup into its own reference file. Consumer files point to it and assume its variables/context are set. The agent loads only what it needs.
 
 Signs of transitive loading:
+
 - Loading file A requires loading file B first
 - The same snippet appears in 2+ reference files
 - Updating a value requires editing multiple files
@@ -143,7 +145,7 @@ If changing the value would cause a runtime error against the target system, it 
 
 ## Best Practices
 
-Full guide: https://agentskills.io/skill-creation/best-practices
+Full guide: <https://agentskills.io/skill-creation/best-practices>
 
 - Start from real expertise — not LLM-generated content
 - Write in imperative form: "Run the command" not "You should run the command"

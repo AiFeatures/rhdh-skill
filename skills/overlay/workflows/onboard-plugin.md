@@ -391,7 +391,7 @@ If tracking this work in JIRA, update the ticket after merge.
 
 **Reference:** See [RHIDP-11137](https://issues.redhat.com/browse/RHIDP-11137) for an example of how plugin onboarding was tracked.
 
-**Details:** `../../rhdh/references/jira-reference.md` has CLI patterns if needed.
+**Details:** Use the `rhdh-jira` skill for CLI patterns if needed.
 
 </process>
 

@@ -17,10 +17,15 @@ class TestAgentsMdStructure:
         """AGENTS.md must exist at project root."""
         assert (skill_root / "AGENTS.md").exists()
 
-    def test_claude_md_symlink_exists(self, skill_root):
-        """CLAUDE.md should exist as a symlink to AGENTS.md."""
+    def test_claude_md_exists(self, skill_root):
+        """CLAUDE.md must exist at project root."""
         claude_path = skill_root / "CLAUDE.md"
         assert claude_path.exists(), "CLAUDE.md must exist at project root"
+
+    def test_claude_md_points_to_agents(self, skill_root):
+        """CLAUDE.md should use @AGENTS.md directive."""
+        content = (skill_root / "CLAUDE.md").read_text().strip()
+        assert content == "@AGENTS.md", f"CLAUDE.md should contain '@AGENTS.md', got: {content!r}"
 
     def test_has_think_before_coding_rule(self, agents_md):
         """AGENTS.md must mention think before coding."""

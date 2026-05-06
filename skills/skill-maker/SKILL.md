@@ -1,11 +1,13 @@
 ---
 name: skill-maker
-description: Create new agent skills following the Agent Skills open standard (agentskills.io). Interviews the user relentlessly about intent, scope, and edge cases before drafting. Covers SKILL.md structure, frontmatter, progressive disclosure, description optimization, script bundling, sub-command architecture, setup gates, context systems, and review. Use when the user wants to create a skill, write a skill, build a new skill, make a skill, draft a SKILL.md, or mentions "skill-maker". Also use when asked to package expertise, workflows, or domain knowledge into a reusable skill.
+description: Create new agent skills or consolidate existing skills following the Agent Skills open standard (agentskills.io). Interviews the user relentlessly about intent, scope, and edge cases before drafting. Covers SKILL.md structure, frontmatter, progressive disclosure, description optimization, script bundling, sub-command architecture, setup gates, context systems, and review. Use when the user wants to create a skill, write a skill, build a new skill, make a skill, draft a SKILL.md, or mentions "skill-maker". Also use when asked to package expertise, workflows, or domain knowledge into a reusable skill. Also use when asked to consolidate skills, merge skills, combine skills, reduce skill count, or refactor multiple skills into one.
 ---
 
-# Create Skill
+# Create or Consolidate Skills
 
 Create agent skills following the [Agent Skills open standard](https://agentskills.io/specification).
+
+**If consolidating existing skills** (merging multiple skills into fewer), read `references/consolidation-guide.md` and follow its workflow instead of the phases below. Return to Phase 5 (Review) for the final checklist.
 
 ## Phase 1: Interview
 
@@ -36,6 +38,8 @@ Focus areas, roughly in order:
     - **Does behavior vary by task type?** If so, design a register/mode system that classifies the task first, then loads different references.
 
 Read `references/architecture-patterns.md` when the skill needs sub-commands, context systems, or setup gates.
+
+**Consolidation signal check:** If the interview reveals the new skill overlaps significantly with existing skills (shared scripts, cross-references, linear pipeline), consider consolidating instead of creating. Read `references/consolidation-guide.md` for the signals and workflow.
 
 Do not proceed to Phase 2 until the user confirms the scope is complete.
 
@@ -198,6 +202,7 @@ Read `references/scripts-guide.md` for the full guide.
 For each piece of the skill's workflow, ask: "Could a script do this?" If yes, write the script.
 
 **Should be scripts:**
+
 - Validation (input format, required fields, schema compliance)
 - File generation from templates
 - Data extraction and transformation
@@ -209,6 +214,7 @@ For each piece of the skill's workflow, ask: "Could a script do this?" If yes, w
 - Cleanup (remove deprecated files after skill updates)
 
 **Should stay as instructions:**
+
 - Deciding between architectural approaches
 - Reviewing code for quality or style
 - Explaining tradeoffs to the user
@@ -216,6 +222,7 @@ For each piece of the skill's workflow, ask: "Could a script do this?" If yes, w
 - Interview/discovery conversations
 
 Key patterns:
+
 - **Python without dependencies**: stdlib only, `argparse` for CLI parsing
 - **Python with dependencies**: PEP 723 inline metadata with `uv run`
 - **All scripts**: Structured output (JSON when piped), clear exit codes, descriptive `--help`
@@ -233,6 +240,7 @@ The SKILL.md references it: "Load context via `python scripts/load_context.py`. 
 Before presenting the final skill, verify against this checklist:
 
 ### Basics
+
 - [ ] `name` is lowercase, hyphens only, max 64 chars
 - [ ] `description` is under 1024 chars and includes trigger phrases
 - [ ] `description` is slightly pushy — covers edge phrasings that should activate the skill
@@ -240,6 +248,7 @@ Before presenting the final skill, verify against this checklist:
 - [ ] Instructions use imperative form
 
 ### Architecture (if applicable)
+
 - [ ] Sub-commands have a router table with clear routing rules
 - [ ] `command-metadata.json` is the single source of truth for command descriptions
 - [ ] Setup gates are defined with fail actions for each gate
@@ -247,6 +256,7 @@ Before presenting the final skill, verify against this checklist:
 - [ ] Capability-gated steps degrade gracefully with one-line skip reasons
 
 ### References
+
 - [ ] Domain knowledge split into `references/` with clear "when to read" pointers
 - [ ] Each reference is self-contained — no transitive loading (see `spec-guide.md` → Reference Architecture)
 - [ ] Reference loading is conditional, not eager ("Read X if Y happens")
@@ -256,12 +266,14 @@ Before presenting the final skill, verify against this checklist:
 - [ ] No browser-only tools referenced (Postman, API consoles, OAuth login pages)
 
 ### Scripts
+
 - [ ] Scripts (if any) have shebangs, structured output, and `--help`
 - [ ] Context loader returns JSON, handles missing files, resolves fallback paths
 - [ ] Scripts are cross-platform (pathlib, tempfile, no hardcoded paths)
 - [ ] Scripts are idempotent — safe to re-run
 
 ### API/Service Skills (if applicable)
+
 - [ ] Credential files are never read into context — passed via shell substitution only
 - [ ] Credential setup is single-sourced in its own reference file
 - [ ] Capability gate checks for credentials before attempting API calls
@@ -269,7 +281,19 @@ Before presenting the final skill, verify against this checklist:
 - [ ] API examples have been validated against the live endpoint
 - [ ] Instance-specific values include programmatic discovery methods
 
+### Consolidation (if merging existing skills)
+
+- [ ] No references to old skill names anywhere in the project (`grep -rn` the entire repo)
+- [ ] Router intake menus are sequentially numbered (no gaps from removed items)
+- [ ] Script docstrings and `--help` text reference the new skill name, not the old ones
+- [ ] Reference paths resolve correctly from each file's location (no `references/references/` nesting)
+- [ ] All example files from old skills are represented in the consolidated examples
+- [ ] Scripts in the same skill use consistent patterns (NO_COLOR, shell flags, TTY checks, exit codes)
+- [ ] README, ADRs, and other docs updated to reflect new skill structure
+- [ ] New description covers all trigger phrases from all old skills' descriptions
+
 ### Quality
+
 - [ ] No time-sensitive information (URLs to specific versions, dates that will go stale)
 - [ ] Examples use fake data where possible (emails, names, tokens) — see `spec-guide.md` → Fake Data in Examples
 - [ ] Consistent terminology throughout

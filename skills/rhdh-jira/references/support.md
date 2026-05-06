@@ -69,6 +69,7 @@ For z-stream targeting, discuss with the engineer to prioritize. If committed, s
 ## Closing RHDHSUPP Issues
 
 Close the RHDHSUPP Bug when:
+
 - Investigation is resolved, OR
 - No response from customer within SLA
 

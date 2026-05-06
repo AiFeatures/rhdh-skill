@@ -18,6 +18,7 @@ python scripts/setup.py
 ```
 
 The script checks:
+
 1. `acli` binary on PATH
 2. Jira API token auth configured (`~/.config/acli/jira_config.yaml`)
 3. `.jira-token` file next to `acli` executable (for REST API fallback)
@@ -28,6 +29,7 @@ If `acli` is not installed, download from [Atlassian CLI](https://developer.atla
 ### REST/GraphQL capability gate
 
 Before attempting any REST API or GraphQL call:
+
 1. Run `python scripts/setup.py --json` and check `token_file_found`
 2. If missing, state: "REST API/GraphQL fallback unavailable — `.jira-token` not configured. Run `setup.py` for instructions." Continue with acli-only workflow.
 3. If the user needs REST/GraphQL, load `references/auth.md` for setup instructions
@@ -107,26 +109,31 @@ Load only what the current task requires.
 ## Common Workflows
 
 ### Creating an issue
+
 1. Load `references/templates.md` for the body template
 2. Load `references/workflows.md` for required fields at New status
 3. Run `acli jira workitem create` (see `references/acli-commands.md` if unsure of syntax)
 
 ### Searching with custom fields (team, story points, sprint)
+
 1. Build JQL using patterns from `references/jql-patterns.md`
 2. Pipe results through `scripts/parse_issues.py --enrich` for full field data
 3. Use `-f team="X"` to filter by team (not possible in JQL)
 
 ### Transitioning an issue
+
 1. Load `references/workflows.md` for exit criteria at the target status
 2. Verify required fields are set before transitioning
 3. Run `acli jira workitem transition --key KEY --status "X" --yes`
 
 ### Complex queries (many fields, relationships)
+
 1. Load `references/graphql-queries.md`
 2. Use `issueByKey` for single issues or `issueSearchStable` (beta) for JQL search
 3. Fall back to `acli` + `parse_issues.py --enrich` if GraphQL returns errors
 
 ### Discovering unknown fields or endpoints
+
 1. For REST: load `references/rest-api-fallback.md` — use the OpenAPI spec or `/rest/api/3/field` endpoint
 2. For GraphQL: load `references/graphql-queries.md` — use `__type` introspection queries
 3. Do not guess field IDs or types — always verify against the live schema

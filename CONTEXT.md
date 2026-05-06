@@ -47,8 +47,8 @@ _Avoid_: mandatory workspace, non-mandatory workspace (these are derived label c
 > **Dev:** "Should I review this workspace PR?"
 > **Core Team:** "Check the support tier first — if it's a Supported plugin, it's critical priority. Community plugins can wait unless they're blocking something."
 
-> **Plugin Owner:** "My PR has been open for a week."
-> **Core Team:** "Did you add a publish trigger? CI won't run without `/publish`."
+**Plugin Owner:** "My PR has been open for a week."
+**Core Team:** "Did you add a publish trigger? CI won't run without `/publish`."
 
 ## Flagged ambiguities
 

@@ -19,7 +19,7 @@ GraphQL APIs are self-describing via introspection. There is no separate spec fi
 
 Use `__type` introspection queries to discover fields and types dynamically. Do this when encountering unknown types or before constructing a new query pattern.
 
-#### List all Jira query entry points
+### List all Jira query entry points
 
 ```bash
 curl -s -u "$AUTH" -X POST -H 'Content-Type: application/json' \
@@ -27,7 +27,7 @@ curl -s -u "$AUTH" -X POST -H 'Content-Type: application/json' \
   "$GRAPHQL_URL"
 ```
 
-#### Inspect a specific type
+### Inspect a specific type
 
 ```bash
 curl -s -u "$AUTH" -X POST -H 'Content-Type: application/json' \

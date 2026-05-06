@@ -36,11 +36,10 @@ See the `<tracking_system>` section for details.
 </principle>
 
 <principle name="consult_tool_references">
-**Before using JIRA or GitHub CLI**, read the corresponding reference file:
+**Before using GitHub CLI**, read the reference file:
 - **GitHub:** `references/github-reference.md` — PR queries, CI analysis, `/publish` triggers
-- **JIRA:** `references/jira-reference.md` — JQL queries, issue creation, comment format
 
-These contain critical gotchas (jq escaping, JQL limitations, assignee format) that prevent common errors.
+Contains critical gotchas (jq escaping, assignee format) that prevent common errors.
 </principle>
 
 <principle name="understand_rhdh_repos">
@@ -97,25 +96,18 @@ What would you like to do?
 
 *For creating new RHDH dynamic plugins from scratch*
 
-6. **Create backend plugin** — Bootstrap a new backend dynamic plugin
-7. **Create frontend plugin** — Bootstrap a new frontend dynamic plugin
-8. **Export and package plugin** — Export plugin and package as OCI/tgz/npm
-9. **Configure frontend wiring** — Set up mount points, routes, entity tabs
-
-### Jira Tasks
-
-10. **Jira structure** — Projects and issue types
+6. **Create plugin** — Bootstrap, export, package, or wire a dynamic plugin (backend or frontend)
 
 ### Local Testing Tasks
 
 *For testing plugins in a local RHDH instance using rhdh-local-setup*
 
-11. **Local testing** — Enable/disable/test plugins in local RHDH
+7. **Local testing** — Enable/disable/test plugins in local RHDH
 
 ### General Tasks
 
-12. **Check environment** — Run doctor, configure paths
-13. **View/search activity** — Review worklog, todos
+8. **Check environment** — Run doctor, configure paths
+9. **View/search activity** — Review worklog, todos
 
 **Wait for response before proceeding.**
 </intake>
@@ -141,24 +133,15 @@ What would you like to do?
 
 | Response | Skill |
 |----------|-------|
-| 6, "backend plugin", "create backend", "new backend plugin" | Route to `@create-backend-plugin` skill |
-| 7, "frontend plugin", "create frontend", "new frontend plugin" | Route to `@create-frontend-plugin` skill |
-| 8, "export", "package", "OCI", "publish plugin" | Route to `@export-and-package` skill |
-| 9, "wiring", "mount points", "routes", "entity tabs" | Route to `@generate-frontend-wiring` skill |
+| 6, "backend plugin", "create backend", "frontend plugin", "create frontend", "export", "package", "OCI", "publish plugin", "wiring", "mount points", "routes", "entity tabs" | Route to `@create-plugin` skill |
 
-**To route:** Read the corresponding skill file in `../` and follow its workflow.
-
-### Jira Routes
-
-| Response | Action |
-|----------|--------|
-| 10, "jira", "jira projects", "issue types", "RHIDP", "RHDHPLAN", "RHDHBUGS", "RHDHSUPP" | Read `references/jira-structure.md` and use it as context |
+**To route:** Read `../create-plugin/SKILL.md` and follow its routing rules (backend, frontend, export, wiring sub-commands).
 
 ### Local Testing Routes
 
 | Response | Skill |
 |----------|-------|
-| 11, "local", "test locally", "enable plugin", "disable plugin", "local testing", "rhdh-local-setup" | Route to `@rhdh-local` skill |
+| 7, "local", "test locally", "enable plugin", "disable plugin", "local testing", "rhdh-local-setup" | Route to `@rhdh-local` skill |
 
 **To route:** Read `../rhdh-local/SKILL.md` and follow its intake process.
 
@@ -166,8 +149,8 @@ What would you like to do?
 
 | Response | Action |
 |----------|--------|
-| 12, "doctor", "setup", "config" | Use CLI commands below |
-| 13, "log", "todo", "activity" | Use tracking commands below |
+| 8, "doctor", "setup", "config" | Use CLI commands below |
+| 9, "log", "todo", "activity" | Use tracking commands below |
 
 </routing>
 
@@ -292,8 +275,6 @@ Todos must be **self-contained**—a new session should understand the task with
 <reference_index>
 **RHDH Repos:** references/rhdh-repos.md — repository map, ecosystem relationships, key paths
 **GitHub CLI (PRs, CI, workflows):** references/github-reference.md
-**JIRA CLI (issues, JQL, comments):** references/jira-reference.md
-**JIRA Structure (projects, issue types, filing rules):** references/jira-structure.md
 **Version Matrix:** references/versions.md — RHDH/Backstage version compatibility, create-app versions
 **Slack Notifications:** references/slack-notification.md — Slack ping templates, handle mapping, channel routing
 </reference_index>
@@ -305,10 +286,7 @@ Todos must be **self-contained**—a new session should understand the task with
 | Skill | Purpose | Path |
 |-------|---------|------|
 | overlay | Manage plugins in rhdh-plugin-export-overlays | `../overlay/SKILL.md` |
-| create-backend-plugin | Bootstrap new RHDH backend dynamic plugins | `../create-backend-plugin/SKILL.md` |
-| create-frontend-plugin | Bootstrap new RHDH frontend dynamic plugins | `../create-frontend-plugin/SKILL.md` |
-| export-and-package | Export and package plugins as OCI/tgz/npm | `../export-and-package/SKILL.md` |
-| generate-frontend-wiring | Configure frontend mount points, routes, tabs | `../generate-frontend-wiring/SKILL.md` |
+| create-plugin | Create, export, package, and wire RHDH dynamic plugins | `../create-plugin/SKILL.md` |
 | rhdh-local | Enable/disable/test plugins in local RHDH | `../rhdh-local/SKILL.md` |
 
 ### Shared References
@@ -317,6 +295,5 @@ Todos must be **self-contained**—a new session should understand the task with
 |-----------|---------|------|
 | rhdh-repos | Repository map, ecosystem relationships, key paths | `references/rhdh-repos.md` |
 | versions | RHDH/Backstage version compatibility matrix | `references/versions.md` |
-| jira-structure | RHDH Jira projects, issue types, filing rules | `references/jira-structure.md` |
 
 </skills_index>
