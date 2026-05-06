@@ -43,7 +43,7 @@ Track work across the four RHDH Jira projects.
   - **[refine](./skills/rhdh-jira/references/refine.md)** — Check issues against RHDH workflow exit criteria, detect duplicates, verify parent/child hierarchy, flag unaddressed comments, identify stale issues, and validate sprint readiness.
   - **[plan](./skills/rhdh-jira/references/plan.md)** — Sprint planning prep: carryover report, velocity trend, per-member capacity, ready-for-planning queue, and sprint fill suggestions with expertise matching.
   - **[sprint-report](./skills/rhdh-jira/references/sprint-report.md)** — Sprint review summary: committed vs completed, per-member breakdown, epic progress, demo checklist with naming conventions, and velocity trend.
-  - **[release](./skills/rhdh-jira/references/release.md)** — Release readiness: feature matrix, Program Increment funnel, epic roll-up, cross-team dependency map, blocker bugs, release notes readiness, and risk assessment. Replaces `rhdh-release-triage`.
+  - **[release](./skills/rhdh-jira/references/release.md)** — Release readiness: feature matrix, Program Increment funnel, epic roll-up, cross-team dependency map, blocker bugs, release notes readiness, and risk assessment.
 
 ### Orchestration
 

@@ -120,7 +120,7 @@ Compute this sprint's velocity vs 3-sprint average. Show trend (↑ accelerating
 
 ### Step 9 — Optional: Post to Slack
 
-Format as Slack mrkdwn and offer to post to the team channel. Use `slack_conversations_add_message` if Slack MCP is connected. Follow Slack formatting rules from the hygiene dashboard (no markdown bold, use `<url|text>` for links, `<@USERID>` for mentions).
+Format as Slack mrkdwn and offer to post to the team channel. Use `slack_conversations_add_message` if Slack MCP is connected. Follow Slack mrkdwn formatting rules: use `*bold*` not `**bold**`, `<url|text>` for links, `<@USERID>` for mentions, and `content_type: text/plain`.
 
 ## Output
 

@@ -148,7 +148,7 @@ Where:
 
 ### Data Contract
 
-Callers (hygiene dashboard, refinement workflow) consume this structure:
+Callers (refinement, release, or other workflows) consume this structure:
 
 ```json
 {

@@ -110,7 +110,7 @@ Load only what the current task requires.
 | `references/refine.md` | Checking issues against exit criteria per status, identifying duplicates, missing fields, unaddressed comments, and readiness for the next workflow status. |
 | `references/plan.md` | Sprint planning prep: carryover report, velocity trend, per-member capacity, ready-for-planning queue, sprint fill suggestions. |
 | `references/sprint-report.md` | Sprint review summary: committed vs completed, per-member breakdown, epic progress, demo checklist with naming conventions, velocity trend. |
-| `references/release.md` | Release readiness report: feature matrix, PI funnel states, epic roll-up, cross-team dependency map, blocker bugs, RN readiness, risk assessment. Replaces `rhdh-release-triage`. |
+| `references/release.md` | Release readiness report: feature matrix, PI funnel states, epic roll-up, cross-team dependency map, blocker bugs, RN readiness, risk assessment. |
 
 ## Common Gotchas
 

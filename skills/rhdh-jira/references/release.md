@@ -1,6 +1,6 @@
 # Release Status
 
-Generate a release readiness report: feature status matrix, Program Increment funnel, epic roll-up, dependency map, blocker bugs, release notes readiness, and risk assessment. Replaces the standalone `rhdh-release-triage` skill — consolidates all release triage functionality into this sub-command.
+Generate a release readiness report: feature status matrix, Program Increment funnel, epic roll-up, dependency map, blocker bugs, release notes readiness, and risk assessment.
 
 Supports quick mode (ceremony prep, ~5 API calls) and deep mode (full coherence analysis with per-feature assessment, ~20+ calls).
 
@@ -295,7 +295,7 @@ Available actions (all require user confirmation):
 
 ## Caveats
 
-1. **Intended to replace `rhdh-release-triage`.** This sub-command covers ceremony prep (PI funnel, feature matrix, readiness score) and most deep analysis. For detailed per-feature checklists (15+ checks), Mermaid diagrams, and run history trending, the standalone `rhdh-release-triage` skill remains more thorough until feature parity is reached.
+1. **Deep mode coverage.** This sub-command covers ceremony prep (PI funnel, feature matrix, readiness score) and most deep analysis. For more detailed per-feature checklists, Mermaid diagram generation, and run history trending, consider extending this sub-command.
 2. **Team field requires REST fallback.** One REST call per Feature for team data. For 12 Features, this is 12 extra calls in quick mode.
 3. **Coherence analysis is deep-mode only.** Quick mode skips per-feature exit criteria validation and epic child checks.
 4. **PI funnel states are computed, not stored.** Jira doesn't have a "PI State" field — the funnel is derived from field values (labels, size, assignee, fix version).

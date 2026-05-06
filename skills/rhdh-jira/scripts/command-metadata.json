@@ -20,7 +20,7 @@
     "reference": "references/sprint-report.md"
   },
   "release": {
-    "description": "Release readiness: feature matrix, PI funnel, epic roll-up, dependency map, blocker bugs, RN readiness, risk assessment. Replaces rhdh-release-triage.",
+    "description": "Release readiness: feature matrix, PI funnel, epic roll-up, dependency map, blocker bugs, RN readiness, risk assessment.",
     "argumentHint": "[version] or [version team]",
     "reference": "references/release.md"
   }
