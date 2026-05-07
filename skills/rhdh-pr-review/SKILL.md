@@ -1,6 +1,6 @@
 ---
 name: rhdh-pr-review
-description: Test PR changes on a live RHDH cluster. Fetches CI-built images from PR comments, checks cluster status (deploying if needed), swaps images into the running deployment, and generates a targeted review checklist from the diff. Currently supports rhdh-operator PRs.
+description: Test PR changes on a live RHDH cluster. Fetches CI-built images from PR comments, checks cluster status (deploying if needed), swaps images into the running deployment, and generates a targeted review checklist from the diff. Use when asked to review an rhdh-operator PR, test PR changes on a cluster, swap CI images, or deploy PR images for testing. Also use when user mentions "operator PR", "review PR", or "test this PR on my cluster". Currently supports rhdh-operator PRs.
 ---
 
 <essential_principles>
