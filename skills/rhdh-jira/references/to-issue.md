@@ -72,12 +72,7 @@ Load the appropriate template from `assets/templates/`. If an example exists in 
 3. **Time-box** — "How many story points to allocate?" (required for spikes)
 4. **Expected output** — what deliverable closes this spike (doc, ADR, prototype, recommendation)
 
-**Jira fields to determine:**
-
-- **Priority** — inherit from parent Epic if chained, otherwise ask
-- **Component** — which RHIDP component(s)? See `references/fields.md`.
-- **Assignee** — who will do this work?
-- **Story Points** — for Stories/Tasks. Required for Spikes (time-box).
+After the template questions, infer all Jira fields from the conversation per the Field Inference section in `references/grill.md`. If chained from an Epic, inherit Priority, Team, and Component from the parent. Present recommendations for confirmation. Key fields: Priority, Component, Assignee, and Story Points (required for Spikes as time-box).
 
 ### Step 4 — Duplicate Check
 

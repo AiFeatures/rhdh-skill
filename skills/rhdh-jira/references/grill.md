@@ -8,6 +8,38 @@ Load this alongside the command's type-specific questions. Apply every applicabl
 
 Ask one question at a time. Wait for the answer before asking the next. Adapt follow-ups based on what you learn. If the conversation already established context (e.g., chained from a parent issue), don't re-ask — carry it forward.
 
+## Field Inference
+
+Don't ask the user to fill in each Jira field manually. Instead, infer field values from the conversation and present a recommendation for confirmation. The grill is a conversation, not a form.
+
+After the grill questions are complete, present all inferred fields at once:
+
+> "Based on our discussion, here's what I'd set:"
+>
+> - **Priority**: Major — this is a functional gap, not a regression or blocker
+> - **Team**: COPE — you mentioned this is in the dynamic plugins area
+> - **Size**: M (3) — cross-team coordination + 4 AC items suggests ~3 sprints
+> - **Component**: Plugins — primary area of change
+> - **Assignee**: Allison Hill — top expertise in plugins per assign analysis
+> - **Labels**: `rhdh-2.1-candidate`, `demo` — customer-facing feature targeting 2.1
+>
+> "Adjust any of these? [y to confirm / list changes]"
+
+### Inference signals
+
+| Field | Infer from |
+|-------|------------|
+| **Priority** | Severity of the problem, customer impact, blocker language, urgency words. Default to Major unless clear signals suggest otherwise. |
+| **Team** | Components mentioned, domain area, who the user is, parent issue's team, which team owns the affected code. |
+| **Size** | AC count, dependency count, complexity signals from the grill ("need to investigate", "multiple PRs", "cross-team"). Cross-reference against `references/sizing.md`. |
+| **Component** | Technical domain discussed (RBAC, plugins, catalog, helm, operator, CI/CD, docs). Match against known components in `references/fields.md`. |
+| **Assignee** | If the user is describing their own work, suggest them. Otherwise, run a lightweight expertise match from the conversation context (component + domain keywords against team roster). For deep analysis, suggest running `assign`. |
+| **Labels** | Customer-facing → `demo`. Release target mentioned → `rhdh-X.Y-candidate`. Stretch goal language → `stretch`. Support origin → `rhdh-customer`. |
+
+### When inference is weak
+
+If a field can't be inferred with reasonable confidence, say so: "I'm not sure about the team — is this COPE or Install Method?" Don't guess silently. One targeted question is better than a wrong default.
+
 ## Challenge Behaviors
 
 ### Challenge sizing

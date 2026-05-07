@@ -18,13 +18,7 @@ Interview the user to fill the Feature template sections. Load `assets/templates
 6. **Documentation Considerations** — what docs need creating/updating?
 7. **Upstream engagement** — does this need Backstage community alignment?
 
-**Jira fields to determine:**
-
-- **Team** — which team owns this Feature?
-- **Priority** — Blocker/Critical/Major/Minor
-- **Size** — T-shirt size (XS/S/M/L/XL). The grill behavior handles sizing challenges.
-- **Assignee** — who is the Feature Owner?
-- **Labels** — `demo` if customer-facing, `rhdh-X.Y-candidate` if targeting a release, `stretch` if stretch goal
+After the template questions, infer all Jira fields from the conversation per the Field Inference section in `references/grill.md`. Present recommendations for confirmation. Key fields for Features: Priority, Team, Size (T-shirt), Assignee (Feature Owner), and Labels (`demo`, `rhdh-X.Y-candidate`, `stretch`).
 
 ### Step 2 — Duplicate Check and Feature Request Link
 

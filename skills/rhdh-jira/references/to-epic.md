@@ -34,13 +34,7 @@ Ask one question at a time. Adapt based on entry mode.
 5. **Dependencies** — internal and external
 6. **Acceptance Criteria** — full checklist
 
-**Jira fields to determine:**
-
-- **Team** — which team owns this Epic?
-- **Priority** — inherit from parent Feature if chained, otherwise ask
-- **Size** — T-shirt size (XS/S/M/L/XL)
-- **Component** — which RHIDP component(s)? See `references/fields.md` for the list.
-- **Assignee** — who is the Epic Owner?
+After the template questions, infer all Jira fields from the conversation per the Field Inference section in `references/grill.md`. If chained from a Feature, inherit Priority and Team from the parent. Present recommendations for confirmation. Key fields for Epics: Team, Priority, Size (T-shirt), Component, and Assignee (Epic Owner).
 
 ### Step 3 — Duplicate Check
 
