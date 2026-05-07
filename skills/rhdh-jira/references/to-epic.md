@@ -54,11 +54,33 @@ Follow the challenging behavior in `references/grill.md`.
 
 Infer all Jira fields per `references/grill.md` Field Inference. If chained, inherit Priority and Team from parent Feature. Key fields: Team, Priority, Size (T-shirt), Component, Assignee (Epic Owner).
 
-### Step 6 — Duplicate Check
+### Step 6 — Review
+
+Render the filled template and inferred fields as a temporary markdown file for user review:
+
+```bash
+cat > /tmp/epic-review.md << 'EOF'
+## Epic: {summary}
+
+### Description
+{filled template content}
+
+### Fields
+- **Priority**: {value}
+- **Team**: {value}
+- **Size**: {value}
+- **Component**: {value}
+- **Assignee**: {value}
+EOF
+```
+
+Present to the user: "Review the Epic before creating. [approve / edit / cancel]"
+
+### Step 7 — Duplicate Check
 
 Run the pre-creation check from `references/duplicates.md`. Search RHIDP Epics (`issuetype = Epic`).
 
-### Step 7 — Create Epic
+### Step 8 — Create Epic
 
 Fill the template. Create the issue:
 
@@ -82,13 +104,13 @@ curl -s -X PUT -u "$AUTH" -H "Content-Type: application/json" \
 
 Set Team and Size via REST — follow API preference order in SKILL.md.
 
-### Step 8 — Comments
+### Step 9 — Comments
 
 Follow the comment suggestion behavior from `references/grill.md` — proactively suggest decision trail, elaboration, and abandoned paths as comments.
 
 Add via `acli jira workitem comment --key RHIDP-XXX --comment "text" --yes`.
 
-### Step 9 — Chain Decomposition
+### Step 10 — Chain Decomposition
 
 After the Epic is created:
 

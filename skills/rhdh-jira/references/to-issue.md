@@ -90,11 +90,34 @@ Follow the challenging behavior in `references/grill.md`.
 
 Infer all Jira fields per `references/grill.md` Field Inference. If chained, inherit Priority, Team, and Component from parent Epic. Key fields: Priority, Component, Assignee, and Story Points (required for Spikes as time-box).
 
-### Step 7 — Duplicate Check
+### Step 7 — Review
+
+Render the filled template and inferred fields as a temporary markdown file for user review:
+
+```bash
+cat > /tmp/issue-review.md << 'EOF'
+## {Type}: {summary}
+
+### Description
+{filled template content}
+
+### Fields
+- **Type**: {inferred type}
+- **Project**: {project}
+- **Priority**: {value}
+- **Component**: {value}
+- **Assignee**: {value}
+- **Story Points**: {value}
+EOF
+```
+
+Present to the user: "Review the issue before creating. [approve / edit / cancel]"
+
+### Step 8 — Duplicate Check
 
 Run the pre-creation check from `references/duplicates.md`. Scope to the target project and type.
 
-### Step 8 — Create Issue
+### Step 9 — Create Issue
 
 Fill the template. Create the issue:
 
@@ -135,7 +158,7 @@ curl -s -X PUT -u "$AUTH" -H "Content-Type: application/json" \
 
 Set Story Points via REST if acli fails — follow API preference order in SKILL.md.
 
-### Step 9 — Comments
+### Step 10 — Comments
 
 Follow the comment suggestion behavior from `references/grill.md` — proactively suggest decision trail, elaboration, and abandoned paths as comments.
 

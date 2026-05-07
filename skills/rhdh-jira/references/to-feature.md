@@ -36,7 +36,34 @@ Follow the challenging behavior in `references/grill.md` on the completed draft.
 
 Infer all Jira fields from the conversation per the Field Inference section in `references/grill.md`. Present recommendations for confirmation. Key fields for Features: Priority, Team, Size (T-shirt), Assignee (Feature Owner), and Labels (`demo`, `rhdh-X.Y-candidate`, `stretch`).
 
-### Step 5 — Duplicate Check and Feature Request Link
+### Step 5 — Review
+
+Render the filled template and inferred fields as a temporary markdown file for user review:
+
+```bash
+# Save to temp file
+cat > /tmp/feature-review.md << 'EOF'
+## Feature: {summary}
+
+### Description
+{filled template content}
+
+### Fields
+- **Priority**: {value} — {rationale}
+- **Team**: {value}
+- **Size**: {value} — {rationale}
+- **Assignee**: {value}
+- **Labels**: {values}
+EOF
+```
+
+Present to the user: "Review the Feature before creating. Edit the file or tell me what to change. [approve / edit / cancel]"
+
+- **approve** — proceed to duplicate check and creation
+- **edit** — user modifies the file or provides changes verbally, agent updates
+- **cancel** — abort creation
+
+### Step 6 — Duplicate Check and Feature Request Link
 
 Before creating, run the pre-creation check from `references/duplicates.md` using the proposed summary. Search RHDHPLAN Features specifically (`issuetype = Feature`).
 
@@ -50,7 +77,7 @@ If a matching Feature Request is found: "Found accepted Feature Request {KEY}: {
 
 If a likely duplicate Feature is found, present it and ask: "This may already exist as {KEY}: {summary}. Use the existing issue instead?"
 
-### Step 6 — Create Feature
+### Step 7 — Create Feature
 
 Fill the template with grill results. Save to a temp file. Create the issue:
 
@@ -66,7 +93,7 @@ acli jira workitem create --project RHDHPLAN --type Feature \
 
 Set additional fields via REST if needed (Team, Size) — follow API preference order in SKILL.md.
 
-### Step 7 — Comments
+### Step 8 — Comments
 
 Follow the comment suggestion behavior from `references/grill.md` — proactively suggest decision trail, elaboration, and abandoned paths as comments.
 
@@ -76,7 +103,7 @@ Add each approved comment via:
 acli jira workitem comment --key RHDHPLAN-XXX --comment "comment text" --yes
 ```
 
-### Step 8 — Chain Decomposition
+### Step 9 — Chain Decomposition
 
 After the Feature is created:
 
