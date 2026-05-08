@@ -8,6 +8,7 @@ Read these reference files before starting:
 
 1. `../references/operator-pr-images.md` — Image naming, extraction, validation
 2. `../../rhdh/references/github-reference.md` — gh CLI patterns
+3. `../references/active-verification.md` — Cluster verification patterns (Phase 6)
 
 </required_reading>
 
@@ -193,9 +194,9 @@ if [ -n "$RHDH_NS" ]; then
 fi
 ```
 
-### 4.7 Document rollback
+### 4.7 Record rollback commands
 
-Present rollback commands to the user:
+Record rollback commands for Phase 7. Do not present them yet — they will be included in the findings report.
 
 **OLM-managed — restore CSV image:**
 
@@ -296,29 +297,111 @@ When done testing, rollback the operator image:
 
 ---
 
-## Phase 6: Offer Automated Verification
+## Phase 6: Active Verification
 
-Ask the user:
+Exercise the PR's changes on the live cluster. Reuse the diff categories identified in Phase 5.
 
-> Would you like me to run some verification commands against the cluster now?
+> Read `../references/active-verification.md` before proceeding.
 
-If yes, run the baseline health checks:
+### 6.1 Capture pre-verification baseline
+
+Follow `<baseline_capture>` from the reference. Snapshot the pod spec, CR, ConfigMaps, events, and record the operator log timestamp. These are used for before/after comparison throughout this phase.
+
+### 6.2 Select verification strategy
+
+Map the diff categories from Phase 5 to verification patterns. Execute applicable categories in the order listed — CRD changes must be applied before controller changes can be tested against new fields.
+
+| Diff category | Verification pattern | Reference section |
+|---|---|---|
+| CRD/API (`api/`, `*_types.go`) | Apply CR with new fields, backward compat test | `<crd_api_verification>` |
+| Controller/Reconciler (`internal/controller/`, `pkg/model/`) | Trigger reconciliation, delete/recreate CR | `<controller_verification>` |
+| Default config (`config/profile/`, `default-config/`) | Fresh CR with defaults, verify defaults applied | `<default_config_verification>` |
+| ConfigMap/volume mount changes | Create multi-key ConfigMap, attach to CR, verify deterministic ordering | `<configmap_verification>` |
+| Dependencies (`go.mod`, `go.sum`) | Check runtime impact (startup time, memory, deprecation warnings) | `<dependency_verification>` |
+| Tests only (`*_test.go`) | Offer `make test` / `make integration-test` | No cluster action needed |
+| Build/CI (`.github/`, `Makefile`, `Dockerfile`) | Skip | CI validates these |
+| Docs only (`docs/`, `*.md`) | Skip | No verification needed |
+
+### 6.3 Execute verification
+
+For each applicable category:
+
+1. **Analyze the diff** — read the specific hunks to understand what changed and what the code looked like before. Identify the behavioral difference the PR introduces.
+2. **Design the test** — based on the behavioral change, determine what cluster action would exercise the new code path. For example, if the PR sorts map keys to prevent non-deterministic ordering, create a multi-key ConfigMap and verify ordering stability across reconciliations.
+3. **Execute** — follow the verification pattern from the reference. Adapt the commands to the specific PR (field names, ConfigMap keys, etc.).
+4. **Capture evidence** — run `<evidence_capture>` commands after each action. Record operator logs, pod spec diffs, events, and CR status.
+5. **Clean up** — follow `<cleanup_patterns>` for the specific category before moving to the next.
+6. **Record result** — note pass/fail with the key evidence for Phase 7.
+
+### 6.4 Restore cluster state
+
+After all verification steps, ensure the cluster matches the pre-verification baseline:
+
+1. Follow `<cleanup_patterns>` from the reference
+2. Compare current state against the baseline snapshot from 6.1
+3. If differences remain, investigate and resolve before proceeding
+
+---
+
+## Phase 7: Findings & Recommendations
+
+Synthesize the verification results and provide a complete review assessment.
+
+### 7.1 Verification summary
+
+Summarize what was tested and the results:
+
+| Category | Test performed | Result | Evidence |
+|---|---|---|---|
+| *[category]* | *[what was tested]* | Pass/Fail | *[key observation]* |
+
+### 7.2 Best practice assessment
+
+Review the PR's approach against operator development best practices. Reference `../../rhdh/references/rhdh-repos.md` for operator conventions:
+
+- Does the change follow the existing reconciliation flow pattern (preprocess → init model → apply → cleanup → status)?
+- Are status conditions updated appropriately for new features or error cases?
+- Are new ConfigMap/Secret references watched via `rhdh.redhat.com/ext-config-sync` label?
+- Is error handling consistent with existing controller patterns (wrapped errors, retryable vs terminal)?
+- Are new CRD fields documented with appropriate kubebuilder markers?
+- Does the code avoid non-deterministic iteration patterns (sorted keys, stable ordering)?
+
+### 7.3 Security review
+
+Evaluate the changes from a security perspective:
+
+- Are new environment variables or secrets handled safely (no plaintext logging, proper RBAC)?
+- Do RBAC changes follow least-privilege principle?
+- Are container image references pinned by digest where appropriate?
+- Are new network exposures (ports, routes, service accounts) intentional and documented?
+- Do dependency updates (`go.mod`) introduce known CVEs?
+- Are user-supplied inputs validated before use in resource names or labels?
+
+### 7.4 Improvement suggestions
+
+Based on the findings, suggest concrete improvements if any:
+
+- Code changes needed (reference specific files and lines from the diff)
+- Missing test coverage for the changed code paths
+- Documentation gaps
+- Configuration or operational concerns
+
+### 7.5 Rollback instructions
+
+Present the rollback commands recorded in Phase 4.7:
+
+**OLM-managed — restore CSV image:**
 
 ```bash
-oc get backstage -A
-oc get pods -n $OPERATOR_NS
-oc logs deployment/$OPERATOR_DEPLOY -n $OPERATOR_NS --tail=30
+oc patch csv $CSV_NAME -n $OPERATOR_NS --type='json' \
+  -p="[{\"op\": \"replace\", \"path\": \"/spec/install/spec/deployments/0/spec/template/spec/containers/0/image\", \"value\": \"$CSV_CURRENT_IMAGE\"}]"
 ```
 
-If the PR includes test changes, offer to run tests:
+**Non-OLM — revert deployment image:**
 
 ```bash
-# Only offer — confirm with user before running
-# Unit tests (runs locally, safe)
-make test
-
-# Integration tests (runs against live cluster)
-make integration-test USE_EXISTING_CLUSTER=true USE_EXISTING_CONTROLLER=true PROFILE=rhdh
+oc set image deployment/$OPERATOR_DEPLOY -n $OPERATOR_NS \
+  manager=$CURRENT_IMAGE
 ```
 
 </process>
@@ -340,6 +423,9 @@ make integration-test USE_EXISTING_CLUSTER=true USE_EXISTING_CONTROLLER=true PRO
 
 ```bash
 $RHDH log add "Review PR #<number> (rhdh-operator): swapped image <tag>, generated checklist" \
+  --tag review-pr --tag rhdh-operator
+
+$RHDH log add "PR #<number> active verification: <categories tested>, results: <pass/fail summary>" \
   --tag review-pr --tag rhdh-operator
 
 $RHDH log add "PR #<number> review findings: <summary>" \
@@ -366,6 +452,11 @@ Review is complete when:
 - [ ] Operator pod is healthy (no crash loops)
 - [ ] Backstage CR reconciles successfully
 - [ ] Review checklist generated from diff analysis
+- [ ] Active verification executed for applicable diff categories
+- [ ] Verification evidence captured (logs, pod specs, events)
+- [ ] Cluster restored to pre-verification state
+- [ ] Findings summary with pass/fail per category
+- [ ] Best practice and security assessment completed
 - [ ] Rollback instructions documented and shared with user
 - [ ] Activity logged
 
