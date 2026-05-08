@@ -54,38 +54,12 @@ gh pr view $PR_NUMBER --repo $REPO --json files --jq '.files[].path'
 
 ## Phase 2: Extract CI-Built Images
 
-Find the CI comment with image URLs:
+Follow `../references/operator-pr-images.md`:
 
-```bash
-gh pr view $PR_NUMBER --repo $REPO --json comments \
-  --jq '.comments[] | select(.body | test("quay.io/rhdh-community/operator:")) | .body' \
-  | tail -1
-```
-
-Parse out three image URLs:
-- `quay.io/rhdh-community/operator:<tag>`
-- `quay.io/rhdh-community/operator-bundle:<tag>`
-- `quay.io/rhdh-community/operator-catalog:<tag>`
-
-**If no CI comment found**, check workflow status:
-
-```bash
-BRANCH=$(gh pr view $PR_NUMBER --repo $REPO --json headRefName --jq '.headRefName')
-gh run list --repo $REPO --branch $BRANCH --workflow pr-container-build.yaml --limit 1 \
-  --json status,conclusion
-```
-
-- If `in_progress` — tell user to wait and check back
-- If `failure` — report build failure, link to workflow run
-- If no runs — explain CI may not have triggered (draft PR, docs-only change, external contributor)
-
-**Validate the operator image exists:**
-
-```bash
-skopeo inspect docker://quay.io/rhdh-community/operator:<tag> --raw 2>/dev/null
-```
-
-If validation fails, warn that images may have expired (14-day TTL).
+1. Use `<extracting_from_pr>` to find CI-posted image URLs from the PR comments
+2. Parse out the three image URLs (operator, operator-bundle, operator-catalog)
+3. If no comment found, check CI workflow status using the fallback commands
+4. Use `<validation>` to verify the operator image exists in the registry
 
 ---
 
@@ -121,10 +95,10 @@ oc get backstage -A 2>/dev/null
 
 ### 3.5 Provision or deploy RHDH
 
-Read `../references/cluster-provisioning.md` and follow the appropriate section:
+Use `redhat-developer/rhdh-test-instance` — see `../../rhdh/references/rhdh-repos.md` for its capabilities, Makefile targets, and `/test deploy` slash commands. Read the repo's own README for full usage.
 
-- **No cluster at all** (`oc whoami` fails) → follow `<provision_via_pr>` to provision a cluster via rhdh-test-instance PR workflow
-- **Cluster accessible but no RHDH** → follow `<deploy_on_existing_cluster>` to deploy RHDH locally
+- **No cluster at all** (`oc whoami` fails) → use the rhdh-test-instance PR workflow: comment `/test deploy operator <version> 4h` on a PR via `gh pr comment`. Use a 4h TTL (reviews are short-lived). Match the version to the PR's target branch.
+- **Cluster accessible but no RHDH** → use rhdh-test-instance locally: `make install-operator` then `make deploy-operator`. Read the repo's README for `.env` setup.
 
 Once the operator and Backstage CR are healthy, proceed to Phase 4.
 

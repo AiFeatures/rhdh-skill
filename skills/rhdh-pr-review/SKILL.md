@@ -15,9 +15,7 @@ RHDH=../../rhdh/scripts/rhdh
 
 <principle name="ensure_cluster">
 Always verify the user has a running RHDH cluster with `oc` access before attempting image swaps.
-Check `oc whoami` and `oc get deployment -A | grep rhdh-operator` first.
-If no cluster at all (`oc whoami` fails), **provision one via rhdh-test-instance PR workflow** — comment `/test deploy operator 1.9 4h` on a PR in `redhat-developer/rhdh-test-instance` using `gh pr comment`. No local clone needed.
-If cluster exists but no RHDH, deploy using rhdh-test-instance locally (`make install-operator && make deploy-operator`).
+If no cluster or no RHDH instance, provision one using `redhat-developer/rhdh-test-instance` — see `rhdh-repos.md` for details on that repo's capabilities.
 Don't just tell the user to set things up — do it.
 </principle>
 
@@ -64,8 +62,7 @@ For non-OLM installs, use `oc set image`. For OLM-managed installs, patch the CS
 
 | Reference | Purpose | Path |
 |-----------|---------|------|
-| operator-pr-images | CI image naming, registry, extraction, expiry | `references/operator-pr-images.md` |
-| cluster-provisioning | Provision or deploy RHDH cluster for testing | `references/cluster-provisioning.md` |
+| operator-pr-images | CI image extraction and validation | `references/operator-pr-images.md` |
 | github-reference | gh CLI patterns, PR queries | `../../rhdh/references/github-reference.md` |
 | rhdh-repos | RHDH ecosystem repository map | `../../rhdh/references/rhdh-repos.md` |
 
