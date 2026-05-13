@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+"""OCP lifecycle phase classification.
+
+Replaces the ocp-lifecycle.jq filter. Classifies OCP versions from the
+Red Hat Product Life Cycles API into lifecycle phases (Full Support,
+Maintenance, EUS, End of life).
+
+This module is the single source of truth for OCP phase classification.
+It is used by:
+  - lifecycle-ocp/scripts/check_ocp_lifecycle.py
+  - prow-ocp-coverage/scripts/analyze_coverage.py
+
+Usage:
+    from ocp_lifecycle import classify_ocp_versions
+    versions = classify_ocp_versions(api_response, "2025-05-13")
+"""
+
+import re
+
+
+def _is_date(val):
+    """Return True if val is a YYYY-MM-DD date string."""
+    if not val or not isinstance(val, str):
+        return False
+    return bool(re.match(r"^\d{4}-\d{2}-\d{2}", val))
+
+
+def _to_date(val):
+    """Extract YYYY-MM-DD from a date string, or None."""
+    if _is_date(val):
+        return val[:10]
+    return None
+
+
+def classify_ocp_versions(api_data, today):
+    """Classify OCP versions from the Red Hat Product Life Cycles API.
+
+    Args:
+        api_data: Raw API response dict (the full JSON response).
+        today: Date string in YYYY-MM-DD format.
+
+    Returns:
+        List of dicts with keys: version, ocp_supported, phase,
+        ga_date, end_of_support_date. Sorted by version.
+    """
+    versions = api_data.get("data", [{}])[0].get("versions", [])
+
+    # Keep only clean X.Y version names, skip variants like "4.6 EUS" or "3"
+    versions = [v for v in versions if re.match(r"^\d+\.\d+$", v.get("name", ""))]
+
+    # Filter to OCP 4.x and above (future-proof for 5.x+)
+    versions = [v for v in versions if int(v["name"].split(".")[0]) >= 4]
+
+    phase_order = [
+        "Extended update support Term 2",
+        "Extended update support",
+        "Maintenance support",
+        "Full support",
+    ]
+
+    results = []
+    for ver in versions:
+        phases = ver.get("phases", [])
+
+        # Find latest end-of-support date across all support phases
+        end_dates = []
+        for pname in phase_order:
+            for p in phases:
+                if p.get("name") == pname:
+                    d = _to_date(p.get("end_date"))
+                    if d:
+                        end_dates.append(d)
+        end_of_support = max(end_dates) if end_dates else None
+
+        # GA date
+        ga_raw = None
+        for p in phases:
+            if p.get("name") == "General availability":
+                ga_raw = p.get("end_date", "N/A")
+                break
+
+        # Determine current phase
+        current_phase = "End of life"
+        for pname in phase_order:
+            for p in phases:
+                if p.get("name") != pname:
+                    continue
+                start = _to_date(p.get("start_date"))
+                end_raw = p.get("end_date")
+                end = _to_date(end_raw)
+                if start and start <= today:
+                    if end and end >= today:
+                        current_phase = pname
+                        break
+                    elif not _is_date(end_raw) and end_raw not in (
+                        "N/A",
+                        "",
+                        None,
+                    ):
+                        # Non-date end value (e.g., "Ongoing") means still active
+                        current_phase = pname
+                        break
+            if current_phase != "End of life":
+                break
+
+        results.append(
+            {
+                "version": ver["name"],
+                "ocp_supported": current_phase != "End of life",
+                "phase": current_phase,
+                "ga_date": _to_date(ga_raw) if _is_date(ga_raw) else "N/A",
+                "end_of_support_date": end_of_support or "N/A",
+            }
+        )
+
+    # Sort by version
+    results.sort(key=lambda v: [int(x) for x in v["version"].split(".")])
+    return results
