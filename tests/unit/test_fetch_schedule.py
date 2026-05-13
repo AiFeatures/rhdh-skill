@@ -4,8 +4,6 @@ import datetime as dt_module
 import sys
 from pathlib import Path
 
-import pytest
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _FETCH_SCHEDULE_SCRIPTS = PROJECT_ROOT / "skills" / "rhdh-test-plan-review" / "scripts"
 if str(_FETCH_SCHEDULE_SCRIPTS) not in sys.path:
