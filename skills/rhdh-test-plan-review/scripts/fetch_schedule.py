@@ -58,17 +58,14 @@ def get_gcloud_token():
     if not gcloud:
         return None
 
-    result = subprocess.run(
-        [gcloud, "auth", "print-access-token"],
-        capture_output=True, text=True
-    )
+    result = subprocess.run([gcloud, "auth", "print-access-token"], capture_output=True, text=True)
     token = result.stdout.strip()
     return token if token else None
 
 
 def get_sheets_service():
-    from googleapiclient.discovery import build
     from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
 
     token = get_gcloud_token()
     if not token:
@@ -220,12 +217,7 @@ def main():
         error_exit("no_schedule_tab_found", {"tabs": tabs})
 
     log(f"Reading tab: {tab}")
-    result = (
-        service.spreadsheets()
-        .values()
-        .get(spreadsheetId=SPREADSHEET_ID, range=tab)
-        .execute()
-    )
+    result = service.spreadsheets().values().get(spreadsheetId=SPREADSHEET_ID, range=tab).execute()
     rows = result.get("values", [])
 
     milestones = find_milestones(rows, version)
@@ -233,8 +225,11 @@ def main():
     if not milestones.get("code_freeze") and not milestones.get("ga_date"):
         error_exit(
             "version_not_found",
-            {"version": version, "tab": tab,
-             "hint": "Check that the version string matches the sheet exactly"},
+            {
+                "version": version,
+                "tab": tab,
+                "hint": "Check that the version string matches the sheet exactly",
+            },
         )
 
     output = {

@@ -7,8 +7,6 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
-
 
 _no_color = os.environ.get("NO_COLOR") is not None
 _is_tty = sys.stderr.isatty() and not _no_color
@@ -24,19 +22,20 @@ def get_gcloud_token():
     gcloud = shutil.which("gcloud")
     if not gcloud:
         for candidate in [
-            Path.home() / "Downloads/google-cloud-sdk/bin/gcloud",
-            Path("/usr/lib/google-cloud-sdk/bin/gcloud"),
-            Path("/opt/homebrew/bin/gcloud"),
+            os.path.expanduser("~/Downloads/google-cloud-sdk/bin/gcloud"),
+            "/usr/lib/google-cloud-sdk/bin/gcloud",
+            "/opt/homebrew/bin/gcloud",
         ]:
-            if candidate.exists():
-                gcloud = str(candidate)
+            if os.path.exists(candidate):
+                gcloud = candidate
                 break
     if not gcloud:
         return None, "gcloud not found in PATH"
 
     result = subprocess.run(
         [gcloud, "auth", "print-access-token"],
-        capture_output=True, text=True
+        capture_output=True,
+        text=True,
     )
     token = result.stdout.strip()
     if token:
