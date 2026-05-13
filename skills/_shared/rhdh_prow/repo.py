@@ -61,10 +61,3 @@ def resolve_repo_root(explicit_dir=None):
 
     # 4. Remote mode
     return None, True
-
-
-def repo_path(root, relpath):
-    """Return full local path, or relpath string unchanged for remote mode."""
-    if root is None:
-        return relpath
-    return root / relpath
