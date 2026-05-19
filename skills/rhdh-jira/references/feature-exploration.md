@@ -11,6 +11,10 @@ The meeting is called **Feature Exploration**. The Jira workflow status is **Ref
 
 Do not confuse the two. When referring to the meeting or process, use "Feature Exploration."
 
+**Features in New status are expected going into Feature Exploration.** The exploration meeting is where the team reviews candidates, identifies risks, and produces the information needed to advance features through the pipeline. Do not frame New→Refinement transition as a prerequisite for exploration — it is an *outcome*. Sizing and field population happen during and after exploration.
+
+**Epic creation can happen before or during exploration.** Teams often create child Epics before the exploration meeting to help size the Feature — aggregate Epic sizes inform the Feature’s T-shirt size. Do not treat Epic creation as exclusively an output of exploration.
+
 ## Feature Exploration Checklist
 
 Team leads, architects, and engineers review feature candidates to identify dependencies and risks.
@@ -87,30 +91,13 @@ After exploration is complete:
 
 ## Component Validation
 
-Components are critical for freeze queries and team routing. Validate proposed components against the live Jira data.
+Components are critical for freeze queries and team routing. Use the component catalog and validation script from `references/fields.md`:
 
-> Same validation pattern as `fields.md` Component Validation — duplicated here to avoid transitive loading.
-
-```bash
-# List all components for a project
-curl -s -H "Authorization: Basic $(cat "$TOKEN_FILE")" \
-  "https://redhat.atlassian.net/rest/api/3/project/RHIDP/components" | \
-  python -c "import sys,json; [print(c['name']) for c in json.load(sys.stdin)]"
-
-# For RHDHPLAN
-curl -s -H "Authorization: Basic $(cat "$TOKEN_FILE")" \
-  "https://redhat.atlassian.net/rest/api/3/project/RHDHPLAN/components" | \
-  python -c "import sys,json; [print(c['name']) for c in json.load(sys.stdin)]"
-```
-
-When setting components during feature creation or refinement:
-
-1. **Infer components** from the issue summary and description — match against known component names
-2. **Validate** the proposed components exist in the project
-3. **Flag mismatches** — if a component doesn't exist, suggest the closest match
+1. **Match** components from the Component Catalog table in `references/fields.md` — it includes descriptions and freeze exclusion flags
+2. **Infer** from parent — when creating Epics chained from a Feature, inherit the parent's components
+3. **Validate** against live Jira data: `python scripts/validate_components.py`
 4. **Check FF/CF status** — note if a component is excluded from freeze queries (this affects release planning)
-
-The agent should suggest components based on issue details, but always confirm with the user before setting them.
+5. **Confirm** with the user before setting — never auto-set components
 
 ## Feature Demo and Test Day
 
