@@ -35,21 +35,40 @@ export { default as default } from './plugin';
 export { myTranslationsModule } from './modules';
 ```
 
-## App integration
+## Auto-discovery via separate entry point (RHDH dynamic plugins)
 
-The consuming app must include the module in its `features` array:
+Modules targeting `pluginId: 'app'` are not auto-discovered by `app.packages: all` because they are not part of `createFrontendPlugin`. To make them auto-discoverable without explicit code changes in the consuming app, re-export the module as a **default export** from a separate file and add it as its own entry point in `package.json`:
 
 ```tsx
-import myPlugin, { myTranslationsModule } from '@scope/my-plugin';
-
-createApp({
-  features: [myPlugin, myTranslationsModule],
-});
+// src/myTranslationsModuleExport.ts
+export { myTranslationsModule as default } from './index';
 ```
+
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.tsx",
+    "./my-translations-module": "./src/myTranslationsModuleExport.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": ["src/alpha.tsx"],
+      "my-translations-module": ["src/myTranslationsModuleExport.ts"],
+      "package.json": ["package.json"]
+    }
+  }
+}
+```
+
+Module federation treats each entry point as a separate remote. This lets the Backstage app load the module automatically without adding it to the `features` array.
+
+This pattern works for any `createFrontendModule` that targets a different plugin (init logic modules, translation modules, etc.). See the [quickstart plugin](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/quickstart/plugins/quickstart) for a real example.
 
 ## Key rules
 
 - **Always** `pluginId: 'app'` — translations are app-level, not plugin-level
 - Each language gets its own `createTranslationResource` call
-- Export the module as a named export alongside the default plugin export
-- The app must explicitly opt in by adding the module to `features`
+- Export the module as a named export from `index.ts` for direct consumers
+- For auto-discovery in RHDH, add a separate entry point with a default export

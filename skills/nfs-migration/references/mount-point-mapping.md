@@ -16,7 +16,12 @@ RHDH's legacy dynamic plugin system used mount points in `app-config.dynamic.yam
 | `application/internal/drawer-state` | Init logic in `AppRootElementBlueprint` | `@backstage/frontend-plugin-api` |
 | `global.header/*` | `GlobalHeaderMenuItemBlueprint` | `@red-hat-developer-hub/backstage-plugin-global-header/alpha` |
 | `header/component`, `header/*` | `GlobalHeaderMenuItemBlueprint` | `@red-hat-developer-hub/backstage-plugin-global-header/alpha` |
-| `appIcons` | `icon` param on `createFrontendPlugin` | — |
+| `appIcons` | `IconBundleBlueprint` (or `icon` param on `createFrontendPlugin` for single icons) | `@backstage/plugin-app-react` |
+| `entity.context.menu` | `EntityContextMenuItemBlueprint` | `@backstage/plugin-catalog-react/alpha` |
+| `search.page.results` | `SearchResultListItemBlueprint` | `@backstage/plugin-search-react/alpha` |
+| `search.page.filters` | `SearchFilterBlueprint` | `@backstage/plugin-search-react/alpha` |
+| `search.page.types` | `SearchFilterResultTypeBlueprint` | `@backstage/plugin-search-react/alpha` |
+| `application/header` | `AppRootElementBlueprint` | `@backstage/frontend-plugin-api` |
 
 ## Dynamic routes → PageBlueprint
 
@@ -204,6 +209,136 @@ const myMenuItem = GlobalHeaderMenuItemBlueprint.make({
 ```
 
 The `target` param maps to the header section: `help`, `profile`, `create`, etc. Use `priority` to control ordering.
+
+## Entity context menu → EntityContextMenuItemBlueprint
+
+**Before (mount point):**
+```yaml
+mountPoints:
+  - mountPoint: entity.context.menu
+    importName: SimpleDialog
+    config:
+      props:
+        title: Open Dialog
+        icon: dialogIcon
+```
+
+**After (NFS):**
+```tsx
+import { EntityContextMenuItemBlueprint } from '@backstage/plugin-catalog-react/alpha';
+
+const myMenuItem = EntityContextMenuItemBlueprint.make({
+  name: 'my-action',
+  params: {
+    icon: <DialogIcon />,
+    useProps() {
+      return {
+        title: 'Open Dialog',
+        onClick: () => { /* handle action */ },
+      };
+    },
+  },
+});
+```
+
+The `useProps` hook can call other React hooks and returns `{ title, onClick }` or `{ title, href }` plus optional `disabled`.
+
+## Search page results → SearchResultListItemBlueprint
+
+**Before (mount point):**
+```yaml
+mountPoints:
+  - mountPoint: search.page.results
+    importName: MySearchResultItem
+```
+
+**After (NFS):**
+```tsx
+import { SearchResultListItemBlueprint } from '@backstage/plugin-search-react/alpha';
+
+const mySearchItem = SearchResultListItemBlueprint.make({
+  params: {
+    predicate: result => result.type === 'my-type',
+    component: async () => {
+      const { MyResultItem } = await import('./MyResultItem');
+      return props => <MyResultItem {...props} />;
+    },
+  },
+});
+```
+
+## Search page filters → SearchFilterBlueprint
+
+**Before (mount point):**
+```yaml
+mountPoints:
+  - mountPoint: search.page.filters
+    importName: MySearchFilter
+```
+
+**After (NFS):**
+```tsx
+import { SearchFilterBlueprint } from '@backstage/plugin-search-react/alpha';
+
+const myFilter = SearchFilterBlueprint.make({
+  params: {
+    loader: async () => {
+      const { MySearchFilter } = await import('./MySearchFilter');
+      return props => <MySearchFilter {...props} />;
+    },
+  },
+});
+```
+
+## Search page types → SearchFilterResultTypeBlueprint
+
+**Before (mount point):**
+```yaml
+mountPoints:
+  - mountPoint: search.page.types
+    importName: MySearchType
+```
+
+**After (NFS):**
+```tsx
+import { SearchFilterResultTypeBlueprint } from '@backstage/plugin-search-react/alpha';
+
+const myType = SearchFilterResultTypeBlueprint.make({
+  params: {
+    value: 'my-type',
+    name: 'My Type',
+    icon: <MyTypeIcon />,
+  },
+});
+```
+
+## Application header → AppRootElementBlueprint
+
+**Before (mount point):**
+```yaml
+mountPoints:
+  - mountPoint: application/header
+    importName: GlobalHeader
+    config:
+      position: above-main-content
+```
+
+**After (NFS):**
+```tsx
+import { AppRootElementBlueprint } from '@backstage/frontend-plugin-api';
+
+const myHeader = AppRootElementBlueprint.make({
+  name: 'my-header',
+  params: {
+    loader: async () => {
+      const { GlobalHeader } = await import('./GlobalHeader');
+      return <GlobalHeader />;
+    },
+  },
+});
+```
+
+RHDH's global header plugin is being migrated to extension blueprints in `rhdh-plugins`. The `position: above-main-content` concept is app-layout-specific — verify layout behavior when migrating.
 
 ## Real migration examples
 

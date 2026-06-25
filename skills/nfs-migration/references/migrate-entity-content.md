@@ -87,3 +87,70 @@ export const myCatalogModule = createFrontendModule({
 ```
 
 Export the module so consumers can include it in their app's `features` array.
+
+## EntityContextMenuItemBlueprint
+
+See `mount-point-mapping.md` for the migration pattern (replaces `entity.context.menu` mount point).
+
+## Entity tab groups
+
+Tabs are organized into groups on `page:catalog/entity`. Default groups: `overview`, `documentation`, `development`, `deployment`, `operation`, `observability`.
+
+**Plugin authors** assign content to a group via the `group` param:
+
+```tsx
+const entityContent = EntityContentBlueprint.make({
+  name: 'my-tab',
+  params: {
+    path: '/my-tab',
+    title: 'My Tab',
+    group: 'development',
+    loader: () => import('./MyTab').then(m => <m.MyTab />),
+  },
+});
+```
+
+**Operators** configure groups in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - page:catalog/entity:
+        config:
+          showNavItemIcons: true
+          groups:
+            - overview:
+                title: Overview
+            - documentation:
+                title: Documentation
+            - development:
+                title: Development
+            - custom:
+                title: My Custom Group
+            - deployment: false  # hide this group
+```
+
+Set `group: false` on an `entity-content:*` extension to show it as a standalone tab outside any group.
+
+See `operator-config.md` for the full operator configuration reference.
+
+## Card layout: `type: info` vs `type: content`
+
+Entity overview uses `DefaultEntityContentLayout` with two card types:
+
+- **`type: info`** — renders in a sticky sidebar (right side). Use for compact summary cards like About, Links.
+- **`type: content`** — renders in the main area (left side). Default if not specified.
+
+```yaml
+app:
+  extensions:
+    - entity-card:catalog/about:
+        config:
+          type: info
+    - entity-card:catalog/links:
+        config:
+          type: info
+```
+
+Warnings (orphan, relation, processing errors) are built into the layout — no separate mount point configuration needed.
+

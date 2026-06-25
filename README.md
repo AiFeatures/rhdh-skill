@@ -26,11 +26,7 @@ Build dynamic plugins from scratch — backend or frontend — and get them depl
 
 Migrate your plugins from the legacy Backstage frontend system to the New Frontend System (NFS).
 
-Start with the **[NFS Migration Guide](./docs/nfs-migration-guide.md)** -- it covers what NFS is, why you need to migrate, the deprecation timeline, and walks through every migration pattern with code examples.
-
-When you're ready to migrate, use the Agent Skill to automate it:
-
-- **[nfs-migration](./skills/nfs-migration/SKILL.md)** -- Analyzes your existing plugin, applies the right Blueprint patterns, updates exports, and verifies the result. Two approaches: direct-to-GA (recommended) or phased with backward compatibility.
+- **[nfs-migration](./skills/nfs-migration/SKILL.md)** -- Analyzes your existing plugin, applies the right Blueprint patterns, updates exports, and verifies the result. Two approaches: alpha (default, NFS at `./alpha`) or colocated (NFS + legacy both from root). Reference files cover every extension type, mount point mapping, operator config, gotchas, and verification.
 
 ### Backstage Upgrade
 

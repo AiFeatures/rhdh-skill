@@ -33,8 +33,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
 
 | Approach | Plugin import | Module imports |
 |----------|--------------|----------------|
-| Direct to GA | `import myPlugin from '@scope/my-plugin'` | `import { myTranslationsModule } from '@scope/my-plugin'` |
-| Phased | `import myPlugin from '@scope/my-plugin/alpha'` | `import { myTranslationsModule } from '@scope/my-plugin/alpha'` |
+| Alpha (default) | `import myPlugin from '@scope/my-plugin/alpha'` | `import { myTranslationsModule } from '@scope/my-plugin/alpha'` |
+| Colocated | `import myPlugin from '@scope/my-plugin'` | `import { myTranslationsModule } from '@scope/my-plugin'` |
 
 - The default export is always the plugin (`createFrontendPlugin` result)
 - Named exports are modules (`createFrontendModule` results)
@@ -42,7 +42,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
 
 ## Dev app setup
 
-For direct-to-GA, `dev/index.tsx` should be the NFS dev app (it's the default `yarn start` entry point). Keep the old legacy dev app at `dev/legacy.tsx` and add a `start:legacy` script.
+Add an NFS dev app alongside the existing legacy dev app. Keep the legacy dev app as the default `yarn start` entry point (since NFS is not GA). Add the NFS dev app at `dev/nfs.tsx` with a `start:nfs` script, or at `dev/index.tsx` if you prefer NFS as default during development.
 
 ### NFS dev app (`dev/index.tsx`)
 
@@ -96,12 +96,12 @@ Move the old `createDevApp` from `@backstage/dev-utils` code here. Add to `packa
 "start:legacy": "backstage-cli package start --entrypoint dev/legacy"
 ```
 
-## Consumer migration (packages/app)
+## Consumer imports
 
-If the workspace has a `packages/app` that imports legacy APIs from the plugin's root, those imports will break after the GA migration (legacy is no longer at the root export). Two approaches:
+Since NFS is not GA, legacy exports must remain accessible from the package root:
 
-1. **Update imports** — Change `import { MyPage } from '@scope/my-plugin'` to `import { MyPage } from '@scope/my-plugin/legacy'`
-2. **Create a separate legacy app** — Keep `packages/app` as the NFS app and create `packages/app-legacy` for the old frontend system. This is the pattern used in `rhdh-plugins`.
+- **Alpha approach:** No consumer changes needed — legacy stays at root, NFS is at `./alpha`.
+- **Colocated approach:** Legacy is re-exported from `index.ts` — existing imports continue to work. NFS consumers use the default import.
 
 ## Dynamic plugin considerations (RHDH)
 

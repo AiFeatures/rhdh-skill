@@ -110,3 +110,108 @@ const myWrapper = AppRootWrapperBlueprint.make({
 ```
 
 Register via `createFrontendModule({ pluginId: 'app' })`.
+
+## IconBundleBlueprint — custom icon sets
+
+Replaces `appIcons` config. Registers multiple icons for use across the app (e.g. as string IDs in `config.icon` on page and entity-content extensions).
+
+```tsx
+import { IconBundleBlueprint } from '@backstage/plugin-app-react';
+
+const myIcons = IconBundleBlueprint.make({
+  params: {
+    icons: {
+      fooIcon: <FooIcon />,
+      barIcon: <BarIcon />,
+    },
+  },
+});
+```
+
+Add to `createFrontendPlugin({ extensions: [...] })`. Icons are auto-discovered with the plugin. For a single icon on one page, using the `icon` param on `PageBlueprint` is simpler.
+
+## ThemeBlueprint — custom themes
+
+Replaces legacy `themes` config with `id`, `title`, `variant`, `importName`.
+
+```tsx
+import { ThemeBlueprint } from '@backstage/plugin-app-react';
+import { lightTheme } from './lightTheme';
+
+const customLightTheme = ThemeBlueprint.make({
+  name: 'light',
+  params: {
+    theme: lightTheme,
+    title: 'Light',
+    variant: 'light',
+    icon: <LightIcon />,
+  },
+});
+```
+
+Use `name: 'light'` or `name: 'dark'` to override the built-in themes. Adopters can override the title via `app.extensions`:
+
+```yaml
+app:
+  extensions:
+    - theme:my-plugin/light:
+        config:
+          title: Corporate Light
+```
+
+## FormFieldBlueprint — custom scaffolder fields
+
+Replaces legacy `scaffolderFieldExtensions` config with `importName`.
+
+```tsx
+import { FormFieldBlueprint } from '@backstage/plugin-scaffolder-react/alpha';
+
+export const myField = FormFieldBlueprint.make({
+  name: 'MyCustomField',
+  params: {
+    schema: { /* JSON schema fragment */ },
+    loader: async () => {
+      const { MyCustomField } = await import('./MyCustomField');
+      return MyCustomField;
+    },
+  },
+});
+```
+
+Fields are auto-discovered via `formFieldsApiRef` when the plugin is installed. No YAML registration needed — template authors use the field name in `template.yaml` as before.
+
+## AddonBlueprint — TechDocs addons
+
+Replaces legacy `techdocsAddons` config with `importName`.
+
+```tsx
+import { AddonBlueprint } from '@backstage/plugin-techdocs-react/alpha';
+import { TechDocsAddonLocations } from '@backstage/plugin-techdocs-react';
+
+const exampleAddon = AddonBlueprint.make({
+  name: 'example',
+  params: {
+    location: TechDocsAddonLocations.Content,
+    component: ExampleAddon,
+  },
+});
+```
+
+Addons are collected via `techdocsAddonsApiRef` and merged into TechDocs reader and entity content extensions automatically. The `staticJSXContent` pattern from legacy dynamic plugins is no longer needed.
+
+## NavContentBlueprint — custom sidebar layout
+
+Replaces the entire sidebar navigation component. Use this as an escape hatch when you need custom navigation structure (e.g. RHDH nested `menuItems.parent` groups, which have no direct NFS equivalent).
+
+```tsx
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
+
+const customNav = NavContentBlueprint.make({
+  params: {
+    component: MyCustomSidebar,
+  },
+});
+```
+
+Most plugins don't need this — standard page auto-discovery provides sidebar items. Only use when you need non-standard sidebar structure like nested groups.
+

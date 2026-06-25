@@ -28,7 +28,7 @@ const myDrawer = AppDrawerContentBlueprint.make({
   name: 'my-drawer',
   params: {
     id: MY_DRAWER_ID,
-    loader: () => import('./components/DrawerContent').then(m => <m.DrawerContent />),
+    element: <DrawerContent />,
     resizable: true,
     defaultWidth: 400,
   },
