@@ -10,16 +10,14 @@ description: >
   to the new frontend system for RHDH.
 ---
 
-> **Human-readable guide:** `docs/nfs-migration-guide.md` is the authoritative source for migration patterns. These reference files are optimized for agent consumption. When patterns diverge, the guide takes precedence.
-
 <essential_principles>
 
 <principle name="discover_first">
 Always read the plugin's `package.json`, `src/plugin.ts` (or `src/plugin.tsx`), route refs, API factories, and exported components before making any changes. Understand what exists before migrating.
 </principle>
 
-<principle name="nfs_as_default">
-NFS should be the root export (`.`). Legacy goes to `./legacy` with `@deprecated` tags if kept. This is the GA pattern.
+<principle name="nfs_at_alpha">
+NFS is not GA yet. The default approach is to add NFS at `./alpha` while keeping legacy at the root export (`.`). This avoids breaking existing consumers.
 </principle>
 
 <principle name="upstream_apis">
@@ -31,11 +29,11 @@ Entity content and cards can go directly in the plugin's `extensions` array — 
 </principle>
 
 <principle name="shared_components">
-Keep component imports (`useApi`, `useRouteRef`, etc.) on `@backstage/core-plugin-api` — they work in both legacy and NFS contexts. This lets the same components serve both the root export (NFS) and `./legacy` export. Only use `compatWrapper()` when a component depends on legacy context providers (e.g. old `SidebarContext`) that aren't available in NFS. Don't migrate component imports to `@backstage/frontend-plugin-api` if you need to support legacy consumers.
+Keep component imports (`useApi`, `useRouteRef`, etc.) on `@backstage/core-plugin-api` — they work in both legacy and NFS contexts. This lets the same components serve both export paths. Only use `compatWrapper()` when a component depends on legacy context providers (e.g. old `SidebarContext`) that aren't available in NFS. Don't migrate component imports to `@backstage/frontend-plugin-api` if you need to support legacy consumers.
 </principle>
 
-<principle name="keep_legacy_optional">
-Ask the user if they want to keep legacy exports at `./legacy`. If yes, move old `plugin.ts` code there with `@deprecated` JSDoc. If no, remove it.
+<principle name="keep_legacy">
+Legacy exports must remain available since NFS is not GA. With the alpha approach, legacy stays at root unchanged. With the colocated approach, legacy source moves to `legacy.ts` but is re-exported from `index.ts` so existing consumers don't break.
 </principle>
 
 </essential_principles>
@@ -58,7 +56,7 @@ Ask the user if they want to keep legacy exports at `./legacy`. If yes, move old
 |----------|--------|
 | 1, "migrate", "convert", "NFS" | Follow the migration workflow below |
 | 2, "test", "verify", "deploy" | Read `workflows/test-nfs-plugin.md` |
-| 3, "learn", "guide", "overview" | Read `../../docs/nfs-migration-guide.md` and present key sections to the user |
+| 3, "learn", "guide", "overview" | Read `references/overview.md` and present key sections to the user |
 
 </routing>
 
@@ -83,9 +81,9 @@ If the plugin's `@backstage/*` dependencies are outdated, upgrade them first usi
 
 ### Step 2: Choose Approach
 
-Use **Direct to GA** by default: NFS becomes root export (`.`), legacy at `./legacy`.
+NFS is not GA yet. Use the **Alpha** approach by default: NFS at `./alpha`, legacy stays at root (`.`).
 
-Only ask about the **Phased** approach (`./alpha`) if the user says they have external consumers that can't migrate yet.
+The **Colocated** approach is the alternative: NFS as default export in `index.ts`, legacy source in `legacy.ts` but re-exported from `index.ts` for backward compatibility. Use this when the user wants NFS and legacy APIs available from the same import path.
 
 ### Step 3: Migrate Extensions
 
@@ -103,14 +101,14 @@ Apply each reference's patterns to the discovered extensions. For page plugins, 
 
 ### Step 4: Update package.json
 
-Load `references/package-json.md` and apply the export configuration matching the chosen approach (GA or phased).
+Load `references/package-json.md` and apply the export configuration matching the chosen approach (alpha or colocated).
 
 ### Step 5: Update App Wiring
 
 Load `references/app-setup.md` and:
-- Convert `dev/index.tsx` to use the NFS dev app pattern (`createDevApp` from `@backstage/frontend-dev-utils`)
-- Move the old legacy dev app to `dev/legacy.tsx` with a `start:legacy` script
-- If `packages/app` imports legacy APIs from the plugin root, update those imports to use the `./legacy` subpath (or create a separate `packages/app-legacy` for the old frontend system, keeping `packages/app` as NFS)
+- Add an NFS dev app at `dev/index.tsx` (or `dev/nfs.tsx`) using `createApp` from `@backstage/frontend-defaults`
+- Keep the existing legacy dev app working
+- Verify consumer imports still resolve (alpha approach: no changes needed; colocated approach: legacy re-exports from `index.ts` maintain compatibility)
 
 ### Step 6: Verify
 
@@ -135,20 +133,21 @@ Load `references/verification.md` and run all checks. Run `yarn tsc` from the **
 | `references/testing-rhdh.md` | Testing with a real RHDH instance |
 | `references/gotchas.md` | Troubleshooting migration issues |
 | `references/reference-prs.md` | Looking for real migration examples |
+| `references/operator-config.md` | Plugin uses RHDH operator config or needs `app.extensions` / `app.routes.bindings` reference |
+| `references/overview.md` | User wants to learn about NFS before migrating |
 | `references/support.md` | User needs help beyond what the skill covers |
-| `../../docs/nfs-migration-guide.md` | User wants to learn about NFS |
 
 </reference_index>
 
 <success_criteria>
 
-- Plugin default-exports a `createFrontendPlugin` result
+- `./alpha` (or root, for colocated) default-exports a `createFrontendPlugin` result
 - All legacy extensions have NFS Blueprint equivalents
 - Pages that need nav entries have `title` and `icon` set (on `PageBlueprint` or `createFrontendPlugin`)
-- `package.json` exports NFS at `.` (direct-to-GA) or `./alpha` (phased)
+- `package.json` exports NFS at `./alpha` (alpha approach) or `.` (colocated approach)
 - Translations are in a `createFrontendModule` with `pluginId: 'app'`
 - Entity content extensions are in the plugin's `extensions` array (or a catalog module if injecting from outside)
 - `yarn tsc` and `yarn build` pass
-- Legacy code is at `./legacy` with `@deprecated` tags (if kept)
+- Legacy exports remain available (unchanged at root for alpha; re-exported from `index.ts` for colocated)
 
 </success_criteria>

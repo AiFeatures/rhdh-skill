@@ -34,6 +34,20 @@ const appElement = AppRootElementBlueprint.make({
 });
 ```
 
+## PluginWrapperBlueprint — wraps a single plugin's UI
+
+Use for context providers that should only wrap one plugin, not the entire app. Imported from `@backstage/frontend-plugin-api/alpha`.
+
+```tsx
+import { PluginWrapperBlueprint } from '@backstage/frontend-plugin-api/alpha';
+
+const myPluginWrapper = PluginWrapperBlueprint.make({
+  params: { component: MyPluginProvider },
+});
+```
+
+Unlike `AppRootWrapperBlueprint` (app-wide), this scopes the provider to your plugin's extensions only. Note: this is an `@alpha` API — the import path may change in future Backstage releases.
+
 ## Shared components (legacy + NFS)
 
 Hooks like `useApi` and `useRouteRef` from `@backstage/core-plugin-api` work in both legacy and NFS contexts. Keep component imports on `core-plugin-api` so the same components serve both export paths:
@@ -61,6 +75,7 @@ Import `compatWrapper` from `@backstage/core-compat-api`. Most plugins won't nee
 | Need invisible element at root (init, snackbars, FABs) | `AppRootElementBlueprint` |
 | Components using `useApi`/`useRouteRef` | Keep on `@backstage/core-plugin-api` — works in both systems |
 | Component depends on legacy context providers | Wrap with `compatWrapper()` (rare) |
+| Provider scoped to one plugin only | `PluginWrapperBlueprint` |
 | Both wrapping and init logic needed | Use both separately — don't combine |
 
 All app-level extensions go in your plugin's `extensions` array (they belong to your plugin, not to another plugin).

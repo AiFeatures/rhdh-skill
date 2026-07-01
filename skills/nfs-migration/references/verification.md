@@ -14,29 +14,6 @@ Run these in order. Stop and fix any failures before continuing.
 8. **Entity tabs** (if applicable) — Navigate to an entity, verify tab appears
 9. **Translations** (if applicable) — Switch language, verify strings update
 
-## Playwright smoke test (optional)
-
-```ts
-import { test, expect } from '@playwright/test';
-
-test('plugin page renders', async ({ page }) => {
-  await page.goto('/my-plugin');
-  await expect(page.locator('h1')).toContainText('My Plugin');
-});
-
-test('nav item visible', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('nav')).toContainText('My Plugin');
-});
-
-test('entity tab visible', async ({ page }) => {
-  await page.goto('/catalog/default/component/my-component');
-  await expect(page.locator('[role="tab"]')).toContainText('My Plugin');
-});
-```
-
-Adapt selectors to your plugin. These are starting points, not production-ready tests.
-
 ## Testing principles (any framework)
 
 | What to verify | How |
@@ -53,16 +30,24 @@ Adapt selectors to your plugin. These are starting points, not production-ready 
 | Shared components | Component imports stay on `core-plugin-api` (work in both legacy and NFS) |
 | Legacy compat | Components using `compatWrapper` (if any) render without errors |
 
+## Scalprum / dynamic plugin verification
+
+If dual-exporting (legacy + NFS), also verify:
+
+- [ ] `scalprum.exposedModules` still resolves all `importName`/`module` references in existing operator config
+- [ ] OCI image rebuilt and smoke-tested in RHDH with `APP_CONFIG_app_packageName=app-next`
+
 ## Consumer import check
 
-After migrating, verify that any workspace apps (`packages/app`, dev apps) that import from the plugin still compile. Legacy consumers must update their imports to use the `./legacy` subpath:
+After migrating, verify that any workspace apps (`packages/app`, dev apps) that import from the plugin still compile:
 
 ```bash
-# Find any imports of legacy named exports from the plugin's root
+# Find all imports from the plugin
 grep -r "from '@scope/my-plugin'" packages/ --include='*.ts' --include='*.tsx'
 ```
 
-If hits reference legacy exports (e.g. `MyPage`, `myPlugin`), update them to import from `'@scope/my-plugin/legacy'`.
+- **Alpha approach:** No changes needed — legacy is still at the root.
+- **Colocated approach:** Legacy re-exports from `index.ts` maintain compatibility — verify they resolve.
 
 ## Quick validation commands
 

@@ -6,7 +6,7 @@ Breaking and notable changes between the early NFS alpha and the current Backsta
 
 ## Component imports — keep on `core-plugin-api`
 
-Hooks like `useApi`, `useRouteRef`, and `useRouteRefParams` from `@backstage/core-plugin-api` work in both legacy and NFS contexts. **Keep component imports on `core-plugin-api`** so the same components serve both the root NFS export and the `./legacy` export.
+Hooks like `useApi`, `useRouteRef`, and `useRouteRefParams` from `@backstage/core-plugin-api` work in both legacy and NFS contexts. **Keep component imports on `core-plugin-api`** so the same components serve both export paths.
 
 Only the plugin definition code (`plugin.tsx`) and blueprint/API factory code use `@backstage/frontend-plugin-api` imports. Don't migrate component-level imports — it breaks legacy consumers.
 
@@ -188,6 +188,21 @@ export const viewTechDocRouteRef = createExternalRouteRef({
   id: 'view-techdoc',
   optional: true,
   defaultTarget: 'techdocs.docRoot',
+});
+```
+
+## `AppDrawerContentBlueprint` uses `element`, not `loader`
+
+The RHDH `AppDrawerContentBlueprint` from `@red-hat-developer-hub/backstage-plugin-app-react/alpha` accepts an `element` param (a React element), not `loader` (a lazy import function):
+
+```tsx
+// Correct
+AppDrawerContentBlueprint.make({
+  name: 'my-drawer',
+  params: {
+    id: MY_DRAWER_ID,
+    element: <MyDrawerContent />,
+  },
 });
 ```
 

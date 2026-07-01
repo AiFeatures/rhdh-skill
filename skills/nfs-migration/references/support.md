@@ -8,6 +8,15 @@
 - **[RHDH Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)** — Official Red Hat Developer Hub documentation
 - **[Backstage NFS Docs](https://backstage.io/docs/frontend-system/)** — Upstream New Frontend System documentation, API reference, and migration guides
 
+## Upstream Backstage docs
+
+- [Frontend System Introduction](https://backstage.io/docs/frontend-system/)
+- [Migrating Plugins](https://backstage.io/docs/frontend-system/building-plugins/migrating/)
+- [Migrating Apps](https://backstage.io/docs/frontend-system/building-apps/migrating/)
+- [Configuring Extensions](https://backstage.io/docs/frontend-system/building-apps/configuring-extensions/)
+- [Common Extension Blueprints](https://backstage.io/docs/frontend-system/building-plugins/common-extension-blueprints/)
+- [Example `app-config.yaml`](https://github.com/backstage/backstage/blob/master/app-config.yaml)
+
 ## When to escalate
 
 - **Build failures after migration** — Check `references/gotchas.md` first, then file an issue

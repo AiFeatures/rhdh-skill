@@ -103,19 +103,18 @@ export default createFrontendPlugin({ pluginId: 'my-plugin', ... });
 
 **Fix:** Use `plugin.tsx` (not `.ts`) for the NFS plugin file. Imports like `from './plugin'` resolve both extensions automatically.
 
-## 12. Re-exporting legacy APIs from the root `index.ts`
+## 12. Forgetting to keep legacy exports accessible
 
-**Why:** For direct-to-GA, the root export (`.`) should be NFS-only. If you re-export legacy named exports from `index.ts`, consumers get both APIs from the same path, which defeats the purpose of the GA migration.
+**Why:** NFS is not GA yet. Existing consumers import legacy APIs from the package root. If you remove or move those exports without re-exporting them, consumers break.
 
-**Fix:** Legacy exports should only be reachable via the `./legacy` subpath:
+**Fix:** Depends on approach:
+- **Alpha approach:** Legacy stays at root — no changes needed.
+- **Colocated approach:** Legacy source moves to `legacy.ts`, but must be re-exported from `index.ts`:
 ```tsx
-// src/index.ts — NFS only
+// src/index.ts — NFS default + legacy re-exports
 export { default } from './plugin';
 export { isMyPluginAvailable } from './utils';
-// Do NOT re-export legacy APIs here
-
-// src/legacy.ts — legacy only, reachable via '@scope/my-plugin/legacy'
-export { myPlugin, MyPage } from './legacyPlugin';
+export { myPlugin, MyPage } from './legacy'; // backward compat
 ```
 
 ## 13. Double headers in NFS pages
@@ -139,3 +138,4 @@ const link = useRouteRef(myRouteRef);
 // link might be undefined — check before calling
 const href = link?.() ?? '/fallback';
 ```
+
