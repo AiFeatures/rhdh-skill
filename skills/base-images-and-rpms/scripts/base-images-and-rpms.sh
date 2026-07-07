@@ -8,7 +8,6 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-SKILL_DIR=$(cd "${SCRIPT_DIR}/.." && pwd)
 
 BRANCH=""
 UPDATE_BASE_IMAGES_SCRIPT=""
