@@ -3,8 +3,9 @@ name: base-images-and-rpms
 description: >-
   Updates base images with updateBaseImages.sh and regenerates rpms.lock.yaml with
   rpm-lockfile-prototype in redhat-developer/rhdh, rhdh-must-gather, and rhdh-operator.
+  Use --analyze for read-only Containerfile/Dockerfile scan (current vs latest tags, UBI skew).
   Use for weekly upstream maintenance, UBI/RHEL base image bumps, RPM lockfile refresh,
-  base-images-and-rpms, main, release-*, UBI/RHEL base image bumps, or RPM lockfile refresh.
+  base-images-and-rpms, main, release-*, or analyzing base images before updating.
 ---
 
 # Base images and RPMs
@@ -82,8 +83,40 @@ chmod +x "${SKILL}/scripts/base-images-and-rpms.sh"
 | `--push` | Let `updateBaseImages.sh` push when branch policy allows (still uses `--pr` fallback) |
 | `--no-pr` | Commit locally with `--no-push` only |
 | `--dry-run` | Print commands without executing |
+| `--analyze` | Read-only scan via `analyze-base-images.sh` (no `-b` required; defaults scripts to `main`) |
 
 **Default:** base image updates use `--pr --no-push` (local commits + PR creation, no push). RPM lockfile and node header changes are committed and **pushed to the same open `chore/automated-update-base-images-*` PR branch** when one exists; otherwise a `chore/automated-update-rpm-lockfile/<branch>` PR is opened.
+
+## Analyze without updating
+
+Use `--analyze` to scan Containerfiles and Dockerfiles without checkout, commits, or registry writes:
+
+```bash
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze --parent-dir ~/RHDH/DH/1
+
+# Optional: match GitLab scripts branch to a release line
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze -b release-1.10 --parent-dir ~/RHDH/DH/1
+```
+
+Or run the analyzer directly:
+
+```bash
+"${SKILL}/scripts/analyze-base-images.sh" \
+  -s /path/to/rhidp/rhdh/build/scripts \
+  -w ~/RHDH/DH/1/1-rhdh \
+  -w ~/RHDH/DH/1/1-rhdh-operator
+```
+
+The analyzer reports **current vs latest** per `FROM` line, flags malformed tags, and warns on **UBI minor skew** within a file. Tags must be `major.minor-buildid` or `x.y.z-buildid`; bare numeric registry tags are ignored (same rules as `updateBaseImages.sh`). Requires `skopeo login registry.redhat.io`.
+
+Each registry `FROM` needs a comment URL on the line above:
+
+```containerfile
+# https://registry.access.redhat.com/ubi9/nodejs-24
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-...@sha256:... AS skeleton
+```
+
+For **rhdh**, paths under `e2e-tests/` and `.ci/` are excluded from scans.
 
 ## Workflow
 
