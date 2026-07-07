@@ -221,9 +221,30 @@ update_base_images() {
     git config user.email "rhdh-bot@redhat.com" 2>/dev/null || true
     popd >/dev/null
 
-    "${update_script}" -w "${repo_dir}" -b "${branch}" -sb "${scripts_branch}" \
+    # createPR.sh runs `gh pr view --web` on every createPr() call; updateBaseImages.sh
+    # calls createPr once per image bump. Suppress repeated browser opens and show once below.
+    GITLAB_PIPELINE=true "${update_script}" -w "${repo_dir}" -b "${branch}" -sb "${scripts_branch}" \
         -maxdepth 5 "${BASE_IMAGE_ARGS[@]}" "${extra[@]}" \
         || warn "updateBaseImages.sh reported no change or failed for ${repo_dir}"
+
+    if [[ " ${BASE_IMAGE_ARGS[*]} " == *" --pr "* ]]; then
+        open_automation_pr_in_browser "${repo_dir}" "${branch}"
+    fi
+}
+
+open_automation_pr_in_browser() {
+    local repo_dir="$1"
+    local branch="$2"
+    local pr_branch
+
+    command -v gh >/dev/null 2>&1 || return 0
+    pushd "${repo_dir}" >/dev/null
+    pr_branch=$(find_open_base_images_pr_branch "${branch}" || true)
+    if [[ -n "${pr_branch}" ]]; then
+        log "Opening PR once for ${branch} (${pr_branch})"
+        gh pr view "${pr_branch}" --web 2>/dev/null || true
+    fi
+    popd >/dev/null
 }
 
 update_rpm_lockfile() {
