@@ -105,6 +105,8 @@ updateBaseImages.sh -w REPO_ROOT -b BRANCH -sb SCRIPTS_BRANCH -maxdepth 5 --pr
 
 `-maxdepth 5` reaches `.rhdh/docker/Dockerfile` in the operator repo as well as top-level containerfiles.
 
+`updateBaseImages.sh` calls `createPr()` once per image bump; upstream `createPR.sh` runs `gh pr view --web` on **every** call, which re-opens the same PR URL. This skill sets `GITLAB_PIPELINE=true` during `updateBaseImages.sh` to suppress that, then opens each repo's PR once in the browser when `--pr` is in effect.
+
 ### RPM lockfiles (`rpm-lockfile-prototype`)
 
 Matches each repo's GitHub Action, then commits and pushes to the automation PR:
