@@ -53,7 +53,7 @@ Workflow:
   --dry-run                 Print actions without changing files
 
 Examples:
-  base-images-and-rpms.sh --analyze --parent-dir ~/RHDH/DH/1
+  base-images-and-rpms.sh --analyze --parent-dir ~/RHDH
   base-images-and-rpms.sh -b release-1.10 --parent-dir ~/RHDH/
   base-images-and-rpms.sh -b main \
     --update-base-images-script ~/src/rhdh/build/scripts/updateBaseImages.sh \

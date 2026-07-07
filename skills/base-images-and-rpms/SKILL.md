@@ -58,15 +58,15 @@ SKILL=skills/base-images-and-rpms   # under 1-rhdh-skill checkout
 chmod +x "${SKILL}/scripts/base-images-and-rpms.sh"
 
 # All three repos under a parent directory
-"${SKILL}/scripts/base-images-and-rpms.sh" -b release-1.10 --parent-dir ~/RHDH/DH/1
+"${SKILL}/scripts/base-images-and-rpms.sh" -b release-1.10 --parent-dir ~/RHDH
 
 # Explicit paths and on-disk tools
 "${SKILL}/scripts/base-images-and-rpms.sh" -b main \
-  --update-base-images-script ~/RHDH/DH/4/4-rhdh/build/scripts/updateBaseImages.sh \
+  --update-base-images-script ~/RHDH/rhdh/build/scripts/updateBaseImages.sh \
   --rpm-lockfile-prototype ~/.local/bin/rpm-lockfile-prototype \
-  ~/RHDH/DH/1/1-rhdh \
-  ~/RHDH/DH/1/1-rhdh-operator \
-  ~/RHDH/DH/1/1-must-gather
+  ~/RHDH/rhdh \
+  ~/RHDH/rhdh-operator \
+  ~/RHDH/rhdh-must-gather
 ```
 
 ### Flags
@@ -92,10 +92,10 @@ chmod +x "${SKILL}/scripts/base-images-and-rpms.sh"
 Use `--analyze` to scan Containerfiles and Dockerfiles without checkout, commits, or registry writes:
 
 ```bash
-"${SKILL}/scripts/base-images-and-rpms.sh" --analyze --parent-dir ~/RHDH/DH/1
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze --parent-dir ~/RHDH
 
 # Optional: match GitLab scripts branch to a release line
-"${SKILL}/scripts/base-images-and-rpms.sh" --analyze -b release-1.10 --parent-dir ~/RHDH/DH/1
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze -b release-1.10 --parent-dir ~/RHDH
 ```
 
 Or run the analyzer directly:
@@ -103,8 +103,8 @@ Or run the analyzer directly:
 ```bash
 "${SKILL}/scripts/analyze-base-images.sh" \
   -s /path/to/rhidp/rhdh/build/scripts \
-  -w ~/RHDH/DH/1/1-rhdh \
-  -w ~/RHDH/DH/1/1-rhdh-operator
+  -w ~/RHDH/rhdh \
+  -w ~/RHDH/rhdh-operator
 ```
 
 The analyzer reports **current vs latest** per `FROM` line, flags malformed tags, and warns on **UBI minor skew** within a file. Tags must be `major.minor-buildid` or `x.y.z-buildid`; bare numeric registry tags are ignored (same rules as `updateBaseImages.sh`). Requires `skopeo login registry.redhat.io`.
