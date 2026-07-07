@@ -17,6 +17,7 @@ REPO_DIRS=()
 SKIP_BASE=0
 SKIP_RPM=0
 DRY_RUN=0
+ANALYZE=0
 ALLOW_DIRTY=0
 BASE_IMAGE_ARGS=(--pr --no-push)
 
@@ -29,8 +30,9 @@ Update base images and RPM lockfiles in rhdh, rhdh-must-gather, and rhdh-operato
 
 Usage:
   base-images-and-rpms.sh -b BRANCH [OPTIONS] [REPO_DIR ...]
+  base-images-and-rpms.sh --analyze [OPTIONS] [REPO_DIR ...]
 
-Required:
+Required (update mode):
   -b, --branch BRANCH       Branch to update: main or release-* (e.g. release-1.10)
 
 Optional paths (fetch/install when omitted):
@@ -42,6 +44,7 @@ Repo selection (default: all three under --parent-dir, or current directory if i
   REPO_DIR ...              One or more repo checkouts to update
 
 Workflow:
+  --analyze                 Read-only scan (current vs latest tags, UBI skew); no -b required
   --skip-base               Skip updateBaseImages.sh
   --skip-rpm                Skip rpm-lockfile-prototype
   --dirty                   Pass --dirty to updateBaseImages.sh
@@ -50,6 +53,7 @@ Workflow:
   --dry-run                 Print actions without changing files
 
 Examples:
+  base-images-and-rpms.sh --analyze --parent-dir ~/RHDH
   base-images-and-rpms.sh -b release-1.10 --parent-dir ~/RHDH/
   base-images-and-rpms.sh -b main \
     --update-base-images-script ~/src/rhdh/build/scripts/updateBaseImages.sh \
@@ -167,10 +171,11 @@ resolve_update_base_images_script() {
         return 0
     fi
 
-    local cached="${CACHE_DIR}/${scripts_branch}/updateBaseImages.sh"
-    fetch_gitlab_script "${scripts_branch}" "updateBaseImages.sh" "${CACHE_DIR}/${scripts_branch}"
-    fetch_gitlab_script "${scripts_branch}" "createPR.sh" "${CACHE_DIR}/${scripts_branch}"
-    echo "${cached}"
+    local cached_dir="${CACHE_DIR}/${scripts_branch}"
+    fetch_gitlab_script "${scripts_branch}" "getLatestImageTags.sh" "${cached_dir}"
+    fetch_gitlab_script "${scripts_branch}" "updateBaseImages.sh" "${cached_dir}"
+    fetch_gitlab_script "${scripts_branch}" "createPR.sh" "${cached_dir}"
+    echo "${cached_dir}/updateBaseImages.sh"
 }
 
 resolve_rpm_lockfile_prototype() {
@@ -567,6 +572,26 @@ update_operator_go_mod() {
     popd >/dev/null
 }
 
+run_analyze() {
+    local scripts_branch="$1"
+    local update_script scripts_dir analyze_script repo_dir
+
+    ensure_tools skopeo
+    update_script=$(resolve_update_base_images_script "${scripts_branch}")
+    scripts_dir=$(dirname "${update_script}")
+    fetch_gitlab_script "${scripts_branch}" "getLatestImageTags.sh" "${scripts_dir}"
+
+    analyze_script="${SCRIPT_DIR}/analyze-base-images.sh"
+    [[ -x "${analyze_script}" ]] || chmod +x "${analyze_script}"
+
+    local -a analyze_args=(-s "${scripts_dir}")
+    for repo_dir in "${REPO_DIRS[@]}"; do
+        analyze_args+=(-w "$(cd "${repo_dir}" && pwd)")
+    done
+
+    "${analyze_script}" "${analyze_args[@]}"
+}
+
 commit_push_rpm_lockfile() {
     local branch="$1"
 
@@ -615,6 +640,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --dry-run) DRY_RUN=1; shift ;;
+        --analyze) ANALYZE=1; shift ;;
         -h|--help) usage; exit 0 ;;
         --) shift; break ;;
         -*) die "Unknown option: $1 (try --help)" ;;
@@ -632,8 +658,14 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-[[ -n "${BRANCH}" ]] || { usage; exit 1; }
-validate_branch "${BRANCH}"
+if [[ ${ANALYZE} -eq 0 ]]; then
+    [[ -n "${BRANCH}" ]] || { usage; exit 1; }
+    validate_branch "${BRANCH}"
+elif [[ -z "${BRANCH}" ]]; then
+    BRANCH="main"
+else
+    validate_branch "${BRANCH}"
+fi
 
 if [[ ${#REPO_DIRS[@]} -eq 0 ]]; then
     if [[ -d ".git" ]] && [[ "$(detect_repo_kind "$(pwd)")" != "unknown" ]]; then
@@ -644,6 +676,11 @@ if [[ ${#REPO_DIRS[@]} -eq 0 ]]; then
 fi
 
 SCRIPTS_BRANCH=$(scripts_branch_for "${BRANCH}")
+
+if [[ ${ANALYZE} -eq 1 ]]; then
+    run_analyze "${SCRIPTS_BRANCH}"
+    exit 0
+fi
 
 if [[ ${SKIP_BASE} -eq 0 ]]; then
     ensure_tools jq skopeo curl

@@ -65,12 +65,12 @@ Manage Prow CI job configurations and trigger nightly E2E tests.
 
 ### Base image
 
-Bump UBI / RHEC base image tags and refresh `@sha256` digests in **rhdh** and **rhdh-operator** (see [rhdh-repos](./skills/rhdh/references/rhdh-repos.md)).
+Bump UBI / RHEC base image tags, refresh RPM lockfiles, and align node headers / go.mod in **rhdh**, **rhdh-operator**, and **rhdh-must-gather** (see [rhdh-repos](./skills/rhdh/references/rhdh-repos.md)).
 
-- **[update-base-image](./skills/update-base-image/SKILL.md)** — Analyze and update Containerfile / Dockerfile using [rhdh-downstream](./skills/rhdh/references/rhdh-repos.md#rhdh-downstream) scripts (`build/scripts/`). Tags must be `major.minor-buildid` or `x.y.z-buildid`; bare numeric registry tags are ignored. Bundled `analyze-base-images.sh`; run `updateBaseImages.sh` per repo. Requires `skopeo login registry.redhat.io`.
+- **[base-images-and-rpms](./skills/base-images-and-rpms/SKILL.md)** — Weekly upstream maintenance: `updateBaseImages.sh`, `rpm-lockfile-prototype`, node headers, and go.mod (main only). Use `--analyze` for read-only Containerfile/Dockerfile scan before updating. Requires `skopeo login registry.redhat.io`.
 
 ```bash
-npx skills add redhat-developer/rhdh-skill --skill update-base-image
+npx skills add redhat-developer/rhdh-skill --skill base-images-and-rpms
 ```
 
 ### Local Testing

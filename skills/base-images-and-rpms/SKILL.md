@@ -3,8 +3,9 @@ name: base-images-and-rpms
 description: >-
   Updates base images with updateBaseImages.sh and regenerates rpms.lock.yaml with
   rpm-lockfile-prototype in redhat-developer/rhdh, rhdh-must-gather, and rhdh-operator.
+  Use --analyze for read-only Containerfile/Dockerfile scan (current vs latest tags, UBI skew).
   Use for weekly upstream maintenance, UBI/RHEL base image bumps, RPM lockfile refresh,
-  base-images-and-rpms, main, release-*, UBI/RHEL base image bumps, or RPM lockfile refresh.
+  base-images-and-rpms, main, release-*, or analyzing base images before updating.
 ---
 
 # Base images and RPMs
@@ -57,15 +58,15 @@ SKILL=skills/base-images-and-rpms   # under 1-rhdh-skill checkout
 chmod +x "${SKILL}/scripts/base-images-and-rpms.sh"
 
 # All three repos under a parent directory
-"${SKILL}/scripts/base-images-and-rpms.sh" -b release-1.10 --parent-dir ~/RHDH/DH/1
+"${SKILL}/scripts/base-images-and-rpms.sh" -b release-1.10 --parent-dir ~/RHDH
 
 # Explicit paths and on-disk tools
 "${SKILL}/scripts/base-images-and-rpms.sh" -b main \
-  --update-base-images-script ~/RHDH/DH/4/4-rhdh/build/scripts/updateBaseImages.sh \
+  --update-base-images-script ~/RHDH/rhdh/build/scripts/updateBaseImages.sh \
   --rpm-lockfile-prototype ~/.local/bin/rpm-lockfile-prototype \
-  ~/RHDH/DH/1/1-rhdh \
-  ~/RHDH/DH/1/1-rhdh-operator \
-  ~/RHDH/DH/1/1-must-gather
+  ~/RHDH/rhdh \
+  ~/RHDH/rhdh-operator \
+  ~/RHDH/rhdh-must-gather
 ```
 
 ### Flags
@@ -82,8 +83,40 @@ chmod +x "${SKILL}/scripts/base-images-and-rpms.sh"
 | `--push` | Let `updateBaseImages.sh` push when branch policy allows (still uses `--pr` fallback) |
 | `--no-pr` | Commit locally with `--no-push` only |
 | `--dry-run` | Print commands without executing |
+| `--analyze` | Read-only scan via `analyze-base-images.sh` (no `-b` required; defaults scripts to `main`) |
 
 **Default:** base image updates use `--pr --no-push` (local commits + PR creation, no push). RPM lockfile and node header changes are committed and **pushed to the same open `chore/automated-update-base-images-*` PR branch** when one exists; otherwise a `chore/automated-update-rpm-lockfile/<branch>` PR is opened.
+
+## Analyze without updating
+
+Use `--analyze` to scan Containerfiles and Dockerfiles without checkout, commits, or registry writes:
+
+```bash
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze --parent-dir ~/RHDH
+
+# Optional: match GitLab scripts branch to a release line
+"${SKILL}/scripts/base-images-and-rpms.sh" --analyze -b release-1.10 --parent-dir ~/RHDH
+```
+
+Or run the analyzer directly:
+
+```bash
+"${SKILL}/scripts/analyze-base-images.sh" \
+  -s /path/to/rhidp/rhdh/build/scripts \
+  -w ~/RHDH/rhdh \
+  -w ~/RHDH/rhdh-operator
+```
+
+The analyzer reports **current vs latest** per `FROM` line, flags malformed tags, and warns on **UBI minor skew** within a file. Tags must be `major.minor-buildid` or `x.y.z-buildid`; bare numeric registry tags are ignored (same rules as `updateBaseImages.sh`). Requires `skopeo login registry.redhat.io`.
+
+Each registry `FROM` needs a comment URL on the line above:
+
+```containerfile
+# https://registry.access.redhat.com/ubi9/nodejs-24
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.8-...@sha256:... AS skeleton
+```
+
+For **rhdh**, paths under `e2e-tests/` and `.ci/` are excluded from scans.
 
 ## Workflow
 
