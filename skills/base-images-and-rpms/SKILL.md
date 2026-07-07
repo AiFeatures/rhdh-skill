@@ -13,11 +13,11 @@ description: >-
 
 Refresh **base images** and **RPM lockfiles** in the three upstream GitHub repos:
 
-| Repo | RPM containerfile | `rpms.in.yaml` |
-|------|-------------------|----------------|
-| [redhat-developer/rhdh](https://github.com/redhat-developer/rhdh) | `build/containerfiles/Containerfile` | repo root |
-| [redhat-developer/rhdh-must-gather](https://github.com/redhat-developer/rhdh-must-gather) | `Containerfile` | repo root |
-| [redhat-developer/rhdh-operator](https://github.com/redhat-developer/rhdh-operator) | `.rhdh/docker/Dockerfile` | repo root |
+| Repo | Node / Go source | RPM containerfile |
+|------|------------------|-------------------|
+| rhdh | `build/containerfiles/Containerfile` or `docker/Dockerfile` (release-1.9) | `build/containerfiles/Containerfile` or `.rhdh/docker/Dockerfile` |
+| rhdh-operator | `go.mod` aligned with `ubi9/go-toolset` on **main** only | `.rhdh/docker/Dockerfile` |
+| rhdh-must-gather | — | `Containerfile` |
 
 Upstream helper scripts live in GitLab midstream [rhidp/rhdh](https://gitlab.cee.redhat.com/rhidp/rhdh) on branch `rhdh-1-rhel-9` (see [updateBaseImages.sh](https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/scripts/updateBaseImages.sh)).
 
@@ -126,10 +126,19 @@ When the `ubi9/nodejs-*` builder image in `build/containerfiles/Containerfile` s
 
 1. Reads `node --version` from the updated builder image (`podman`/`docker`)
 2. Downloads `https://nodejs.org/dist/<version>/node-<version>-headers.tar.gz` into `.nvm/releases/`
-3. Updates `.nvmrc` (version without `v` prefix)
+3. Updates `.nvmrc` (version without `v` prefix) and `.nvm/releases/README.adoc` (date + version)
 4. Removes stale `node-v*-headers.tar.gz` files and pushes to the same automation PR
 
-See [rhdh `.nvm/releases/README.adoc`](https://github.com/redhat-developer/rhdh/blob/main/.nvm/releases/README.adoc).
+See [rhdh `.nvm/releases/README.adoc`](https://github.com/redhat-developer/rhdh/blob/main/.nvm/releases/README.adoc). On **release-1.9**, headers come from `docker/Dockerfile` (`ubi9/nodejs-22`), not Node 24.
+
+### Go toolchain (rhdh-operator, main only)
+
+On **main** only (not `release-*`), after base image bumps, reads `go version` from the `ubi9/go-toolset` image in `.rhdh/docker/Dockerfile` and updates `go.mod`:
+
+```text
+go 1.26.0
+toolchain go1.26.4
+```
 
 ## Anti-patterns
 
