@@ -6,7 +6,7 @@
 - Branches: `main`, `release-1.9`, `release-1.10`, …
 - Base images: `build/containerfiles/Containerfile`, `.ci/images/Dockerfile`, and other `Dockerfile`/`Containerfile` paths within `-maxdepth 5`
 - RPM lock: `build/containerfiles/Containerfile` + `rpms.in.yaml` → `rpms.lock.yaml`
-- Node headers: when builder image Node version changes, update `.nvm/releases/node-v*-headers.tar.gz` and `.nvmrc` (see `.nvm/releases/README.adoc`)
+- Node headers: when builder image Node version changes, update `.nvm/releases/node-v*-headers.tar.gz`, `.nvmrc`, and `.nvm/releases/README.adoc` (see `.nvm/releases/README.adoc`)
 - Workflow reference: `.github/workflows/update-rpm-lockfile.yaml`
 
 ## redhat-developer/rhdh-must-gather

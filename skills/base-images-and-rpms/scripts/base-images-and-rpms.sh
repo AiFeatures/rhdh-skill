@@ -91,21 +91,42 @@ scripts_branch_for() {
 
 detect_repo_kind() {
     local repo_dir="$1"
-    if [[ -f "${repo_dir}/build/containerfiles/Containerfile" && -f "${repo_dir}/rpms.in.yaml" ]]; then
-        echo "rhdh"
-    elif [[ -f "${repo_dir}/.rhdh/docker/Dockerfile" && -f "${repo_dir}/rpms.in.yaml" ]]; then
-        echo "rhdh-operator"
-    elif [[ -f "${repo_dir}/Containerfile" && -f "${repo_dir}/rpms.in.yaml" && -d "${repo_dir}/collection-scripts" ]]; then
+    if [[ -f "${repo_dir}/Containerfile" && -f "${repo_dir}/rpms.in.yaml" && -d "${repo_dir}/collection-scripts" ]]; then
         echo "rhdh-must-gather"
+    elif [[ -f "${repo_dir}/go.mod" ]] \
+        && grep -q '^module github.com/redhat-developer/rhdh-operator' "${repo_dir}/go.mod" 2>/dev/null; then
+        echo "rhdh-operator"
+    elif [[ -f "${repo_dir}/rpms.in.yaml" ]] && [[ -f "${repo_dir}/package.json" ]]; then
+        echo "rhdh"
     else
         echo "unknown"
     fi
 }
 
+rhdh_nodejs_containerfile() {
+    local repo_dir="$1"
+    if [[ -f "${repo_dir}/build/containerfiles/Containerfile" ]]; then
+        echo "${repo_dir}/build/containerfiles/Containerfile"
+    elif [[ -f "${repo_dir}/docker/Dockerfile" ]]; then
+        echo "${repo_dir}/docker/Dockerfile"
+    elif [[ -f "${repo_dir}/.rhdh/docker/Dockerfile" ]]; then
+        echo "${repo_dir}/.rhdh/docker/Dockerfile"
+    fi
+}
+
 rpm_containerfile_for() {
-    local kind="$1"
+    local repo_dir="$1"
+    local kind="$2"
     case "${kind}" in
-        rhdh) echo "build/containerfiles/Containerfile" ;;
+        rhdh)
+            if [[ -f "${repo_dir}/build/containerfiles/Containerfile" ]]; then
+                echo "build/containerfiles/Containerfile"
+            elif [[ -f "${repo_dir}/.rhdh/docker/Dockerfile" ]]; then
+                echo ".rhdh/docker/Dockerfile"
+            else
+                die "${repo_dir}: no RPM containerfile found for rhdh"
+            fi
+            ;;
         rhdh-operator) echo ".rhdh/docker/Dockerfile" ;;
         rhdh-must-gather) echo "Containerfile" ;;
         *) die "Unknown repo kind '${kind}'" ;;
@@ -253,7 +274,7 @@ update_rpm_lockfile() {
     local rpm_tool="$3"
     local branch="$4"
     local containerfile
-    containerfile=$(rpm_containerfile_for "${kind}")
+    containerfile=$(rpm_containerfile_for "${repo_dir}" "${kind}")
 
     [[ -f "${repo_dir}/${containerfile}" ]] || die "${repo_dir}: missing ${containerfile}"
     [[ -f "${repo_dir}/rpms.in.yaml" ]] || die "${repo_dir}: missing rpms.in.yaml"
@@ -375,12 +396,37 @@ node_version_from_image() {
     "${runner}" run --rm --entrypoint node "${image}" --version 2>/dev/null | tr -d '\n\r'
 }
 
+update_nvm_releases_readme() {
+    local readme="$1"
+    local node_version="$2"
+    local today
+    today=$(date +%Y/%m/%d)
+
+    [[ -f "${readme}" ]] || return 0
+
+    sed -i \
+        -e "s|^As of [0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9], this version is \`v[^']*\`|As of ${today}, this version is \`${node_version}\`|" \
+        -e "s|^The latest RPM is \`v[^']*\`\.|The latest RPM is \`${node_version}\`.|" \
+        -e "s|^NODE_HEADERS_VERSION=v[0-9].*|NODE_HEADERS_VERSION=${node_version}|" \
+        "${readme}"
+    # Example `node --version` output in the first code block.
+    sed -i -E "s/^v[0-9]+\\.[0-9]+\\.[0-9]+$/$(printf '%s' "${node_version}")/" "${readme}"
+}
+
+nvm_readme_documents_version() {
+    local readme="$1"
+    local node_version="$2"
+    [[ -f "${readme}" ]] || return 1
+    grep -q "this version is \`${node_version}\`" "${readme}" 2>/dev/null
+}
+
 update_rhdh_node_headers() {
     local repo_dir="$1"
     local branch="$2"
-    local containerfile="${repo_dir}/build/containerfiles/Containerfile"
+    local containerfile
+    containerfile=$(rhdh_nodejs_containerfile "${repo_dir}")
 
-    [[ -f "${containerfile}" ]] || return 0
+    [[ -n "${containerfile}" && -f "${containerfile}" ]] || return 0
 
     local image
     image=$(rhdh_nodejs_builder_image "${containerfile}")
@@ -391,7 +437,7 @@ update_rhdh_node_headers() {
 
     log "Node headers: checking node version from ${image##*/}"
     if [[ ${DRY_RUN} -eq 1 ]]; then
-        echo "  dry-run: podman/docker run ${image} --version; refresh .nvm/releases if changed"
+        echo "  dry-run: podman/docker run ${image} --version; refresh .nvm/releases, .nvmrc, README.adoc if changed"
         return 0
     fi
 
@@ -402,7 +448,7 @@ update_rhdh_node_headers() {
 
     pushd "${repo_dir}" >/dev/null
 
-    local node_version node_version_plain headers_file current_nvmrc old
+    local node_version node_version_plain headers_file readme_file current_nvmrc old
     node_version=$(node_version_from_image "${image}") || true
     if [[ -z "${node_version}" ]]; then
         warn "Node headers: could not read node version from ${image}"
@@ -412,10 +458,12 @@ update_rhdh_node_headers() {
 
     node_version_plain="${node_version#v}"
     headers_file=".nvm/releases/node-${node_version}-headers.tar.gz"
+    readme_file=".nvm/releases/README.adoc"
     current_nvmrc=""
     [[ -f .nvmrc ]] && current_nvmrc=$(tr -d '\n\r' < .nvmrc)
 
-    if [[ -f "${headers_file}" && "${current_nvmrc}" == "${node_version_plain}" ]]; then
+    if [[ -f "${headers_file}" && "${current_nvmrc}" == "${node_version_plain}" ]] \
+        && nvm_readme_documents_version "${readme_file}" "${node_version}"; then
         log "Node headers: already up to date (${node_version})"
         popd >/dev/null
         return 0
@@ -426,6 +474,7 @@ update_rhdh_node_headers() {
     curl -fsSL "https://nodejs.org/dist/${node_version}/node-${node_version}-headers.tar.gz" \
         -o "${headers_file}"
     echo "${node_version_plain}" > .nvmrc
+    update_nvm_releases_readme "${readme_file}" "${node_version}"
 
     for old in .nvm/releases/node-v*-headers.tar.gz; do
         [[ -e "${old}" && "${old}" != "${headers_file}" ]] || continue
@@ -437,7 +486,84 @@ update_rhdh_node_headers() {
     done
 
     commit_push_paths "${branch}" "chore: update node headers to ${node_version} [skip-build]" \
-        .nvmrc "${headers_file}"
+        .nvmrc "${headers_file}" "${readme_file}"
+    popd >/dev/null
+}
+
+operator_go_toolset_image() {
+    local dockerfile="$1"
+    grep -E '^FROM registry\.access\.redhat\.com/ubi9/go-toolset:' "${dockerfile}" \
+        | head -1 | awk '{print $2}'
+}
+
+go_version_from_toolset_image() {
+    local image="$1"
+    local runner=podman
+    command -v podman >/dev/null 2>&1 || runner=docker
+    "${runner}" run --rm --entrypoint go "${image}" version 2>/dev/null \
+        | awk '{print $3}' | sed 's/^go//'
+}
+
+go_mod_language_version() {
+    local full="$1"
+    local major minor
+    IFS=. read -r major minor _ <<< "${full}"
+    echo "${major}.${minor}.0"
+}
+
+update_operator_go_mod() {
+    local repo_dir="$1"
+    local branch="$2"
+    local dockerfile="${repo_dir}/.rhdh/docker/Dockerfile"
+
+    if [[ "${branch}" != "main" ]]; then
+        log "Go toolchain: skipping go.mod update on ${branch} (main only)"
+        return 0
+    fi
+
+    [[ -f "${repo_dir}/go.mod" && -f "${dockerfile}" ]] || return 0
+
+    local image
+    image=$(operator_go_toolset_image "${dockerfile}")
+    [[ -n "${image}" ]] || return 0
+
+    log "Go toolchain: checking version from ${image##*/}"
+    if [[ ${DRY_RUN} -eq 1 ]]; then
+        echo "  dry-run: align go.mod with go version from ${image}"
+        return 0
+    fi
+
+    if ! command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
+        warn "Go toolchain: podman or docker required; skipping go.mod update"
+        return 0
+    fi
+
+    pushd "${repo_dir}" >/dev/null
+
+    local go_full go_lang current_toolchain
+    go_full=$(go_version_from_toolset_image "${image}") || true
+    if [[ -z "${go_full}" ]]; then
+        warn "Go toolchain: could not read go version from ${image}"
+        popd >/dev/null
+        return 0
+    fi
+
+    go_lang=$(go_mod_language_version "${go_full}")
+    current_toolchain=$(grep -E '^toolchain ' go.mod 2>/dev/null | awk '{print $2}' || true)
+    if [[ "${current_toolchain}" == "go${go_full}" ]] \
+        && grep -qE "^go ${go_lang}$" go.mod 2>/dev/null; then
+        log "Go toolchain: already aligned with go${go_full}"
+        popd >/dev/null
+        return 0
+    fi
+
+    log "Go toolchain: updating go.mod to go ${go_lang} / toolchain go${go_full}"
+    sed -i \
+        -e "s/^go .*/go ${go_lang}/" \
+        -e "s/^toolchain .*/toolchain go${go_full}/" \
+        go.mod
+
+    commit_push_paths "${branch}" "chore: align go.mod with ubi9/go-toolset go${go_full} [skip-build]" go.mod
     popd >/dev/null
 }
 
@@ -562,6 +688,9 @@ for repo_dir in "${REPO_DIRS[@]}"; do
     if [[ "${kind}" == "rhdh" ]]; then
         update_rhdh_node_headers "${repo_dir}" "${BRANCH}"
     fi
+    if [[ "${kind}" == "rhdh-operator" ]]; then
+        update_operator_go_mod "${repo_dir}" "${BRANCH}"
+    fi
 done
 
-log "Done. Review open PRs for base image, RPM lockfile, and node header updates."
+log "Done. Review open PRs for base image, RPM lockfile, node header, and go.mod updates."
