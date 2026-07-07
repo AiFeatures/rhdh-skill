@@ -66,7 +66,7 @@ die() {
 }
 
 log() {
-    echo "[INFO] $*"
+    echo "[INFO] $*" >&2
 }
 
 warn() {
