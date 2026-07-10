@@ -135,16 +135,17 @@ Track work across the four RHDH Jira projects.
    npx skills add -g redhat-developer/rhdh-skill
    ```
 
-2. **Configure repo paths** so skills can find your local checkouts:
+2. **Talk to your agent.** Mention what you're working on and `rhdh` takes care of the rest — including first-time setup:
 
-   ```bash
-   rhdh config init          # auto-detects repos in common locations
-   # or set individually:
-   rhdh config set repos.overlay /path/to/rhdh-plugin-export-overlays
-   rhdh config set repos.operator /path/to/rhdh-operator
+   ```
+   You: "I need to onboard the aws-appsync plugin to the Extensions Catalog"
+
+   Agent: runs rhdh doctor, detects missing config
+   Agent: runs rhdh config init, finds your local repos
+   Agent: routes to the overlay skill, starts the onboard workflow
    ```
 
-3. **Talk to your agent.** Mention what you're working on — onboarding a plugin, triaging PRs, creating a backend module, checking Jira — and `rhdh` routes to the right skill automatically.
+   On the first run, `rhdh` auto-detects your local checkouts and creates `~/.config/rhdh-skill/config.json`. If a repo isn't found automatically, the agent will ask you for its path.
 
 ## Installation
 
