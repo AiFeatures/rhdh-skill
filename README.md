@@ -147,11 +147,10 @@ npx skills add redhat-developer/rhdh-skill --skill create-plugin
 npx skills add redhat-developer/rhdh-skill -a claude-code
 ```
 
-### Claude Code Plugin Marketplace
+### Update
 
 ```bash
-claude plugin marketplace add redhat-developer/rhdh-skill
-claude plugin install --scope project rhdh
+npx skills update rhdh-skill
 ```
 
 ### Local Checkout (development)
